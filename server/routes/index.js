@@ -4,12 +4,12 @@
 
 exports.index = function(req, res){
   res.render('index', {
-    title: 'Light Bikes'
+    title: ''
   });
 };
 
 exports.submit = function(req, res) {
-  res.render('submit', {
-    title: 'Light Bikes - Submit Entry'
+  res.render('register', {
+    title: 'Submit Entry'
   });
 };
