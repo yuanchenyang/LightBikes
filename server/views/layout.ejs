@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>LightBikes - <%= title %></title>
+    <title>LightBikes<%- (title) ? (" - " + title) : "" %></title>
     <script type='text/javascript' src='/vendor/js/jquery.min.js'></script>
-    <script type='text/javascript' src='/vendor/js/processing.js'></script>
-    <script type='text/javascript' src='/js/clock.js'></script>
+    <%- scripts %>
     <link rel='stylesheet' href='/css/style.css' />
   </head>
   <body>
