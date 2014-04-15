@@ -1,5 +1,6 @@
 
 var stage = new createjs.Stage("main_canvas");
+
 var Hexes = [];
 
 var p1 = null;
@@ -10,16 +11,80 @@ var p4 = null;
 function Player(_x, _y) {
     this.x = _x;
     this.y = _y;
+
+    this.name = "";
 }
 
 Player.prototype.getCurrentHex = function() {
-    return Hexes[this.y][this.x];
+    return Hexes[this.x][this.y];
+}
+
+/* direction is an integer from 0 to 5 where 0 is moving to the hex in an
+ * upper-right direction, 1 is moving to the hex above the current one, and so
+ * on
+ *
+ * If there is a hex available in that direction for the player to move onto
+ * (regardless of whether there is a Trail or another player at that hex) this
+ * returns true; otherwise it returns false. 
+ */
+Player.prototype.move = function(direction) {
+
+  var x_cur = this.x;
+  var y_cur = this.y;
+
+  var x_new;
+  var y_new;
+
+  var even_col = x_cur % 2 === 0;
+
+  switch (direction) {
+    case 0:
+      x_new = x_cur + 1;
+      y_new = even_col ? y_cur - 1 : y_cur;
+      break;
+
+    case 1:
+      y_new = y_cur - 1;
+      x_new = x_cur;
+      break;
+
+    case 2:
+      x_new = x_cur - 1;
+      y_new = even_col ? y_cur - 1: y_cur;
+      break;
+
+    case 3:
+      x_new = x_cur - 1;
+      y_new = even_col ? y_cur: y_cur + 1;
+      break;
+
+    case 4:
+      y_new = y_cur + 1;
+      x_new = x_cur;
+      break;
+
+    case 5:
+      x_new = x_cur + 1;
+      y_new = even_col ? y_cur : y_cur + 1;
+      break;
+
+    default:
+      return false;
+  }
+
+  if (Hexes[x_new] && Hexes[x_new][y_new]) {
+    this.x = x_new;
+    this.y = y_new;
+    return true;
+  }
+
+  return false;
 }
 
 function setAnimationInterval(interval) {
 
     createjs.Ticker.addEventListener('tick', function() {
-        console.log("Tick");
+        //console.log("Tick");
 
         stage.update();
     });
@@ -34,31 +99,28 @@ function drawGrid(radius) {
     var id = 0;
     var side_offset = 2;
 
-    var y = side_offset;
+    var x = side_offset;
 
     var h_rad = 0.5*radius;
     var hex_halfheight = Math.sqrt(radius*radius - h_rad*h_rad);
 
-    while (y < (stage.canvas.height - 2*radius)) {
+    while (x < (stage.canvas.width - 2*radius)) {
 
-        var x = side_offset
-        var idx = Hexes.push([]) - 1;
+      var y = side_offset;
+      var idx = Hexes.push([]) - 1;
 
-        //even rows are drawn inwards
-        if (idx % 2 === 1) {
-            x += 1.5*radius;
-        }
-
-        while (x < (stage.canvas.width - 2*radius)) {
-            var hex = drawHex(x + radius, y + radius, radius, 1);
-            hex.myprops.id = id;
-            id++;
-            Hexes[idx].push(hex);
-
-            x += 3*radius;
-        }
-
+      if (idx % 2 !== 0) {
         y += hex_halfheight;
+      }
+
+      while (y < (stage.canvas.height - 2*radius)) {
+        var hex = drawHex(x + radius, y + radius, radius, 1);
+        hex.myprops.id = id;
+        id++;
+        Hexes[idx].push(hex);
+        y += 2 * hex_halfheight;
+      }
+      x += 1.5*radius;
     }
 }
 
@@ -104,17 +166,17 @@ function placePlayers(a, b, c, d) {
     }
 
     if (b) {
-        p2 = new Player(0, Hexes.length-1);
+        p2 = new Player(Hexes.length-1, 0);
         p2.name = b;
     }
 
     if (c) {
-        p3 = new Player(Hexes[0].length-1, 0);
+        p3 = new Player(0, Hexes[0].length-1);
         p3.name = c;
     }
 
     if (d) {
-        p4 = new Player(Hexes[Hexes.length-1].length-1, Hexes.length-1);
+        p4 = new Player(Hexes.length -1, Hexes[Hexes.length-1].length-1);
         p4.name = d;
     }
 }
