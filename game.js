@@ -14,6 +14,7 @@ function Player(_x, _y) {
 
     this.name = "";
     this.color = "black";
+    this.alive = true;
 }
 
 Player.prototype.getCurrentHex = function() {
@@ -48,6 +49,9 @@ Player.prototype.renderOnGrid = function() {
  * returns true; otherwise it returns false. 
  */
 Player.prototype.move = function(direction) {
+  if (!this.alive) {
+    return false;
+  }
 
   var x_cur = this.x;
   var y_cur = this.y;
@@ -99,6 +103,10 @@ Player.prototype.move = function(direction) {
   }
 
   return false;
+}
+
+Player.prototype.kill = function() {
+  this.alive = false;
 }
 
 function setAnimationInterval(interval) {
