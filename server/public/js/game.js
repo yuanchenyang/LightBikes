@@ -31,15 +31,15 @@ $(document).ready(function() {
     var hex = this.getCurrentHex();
 
     if (this.circle) {
-      this.circle.x = hex.x;
-      this.circle.y = hex.y;
+      this.circle.x = hex._hex.x;
+      this.circle.y = hex._hex.y;
     } else {
-      var circ_rad = hex.myprops.radius * 0.4;
+      var circ_rad = hex.radius * 0.4;
       var circle = new createjs.Shape();
       circle.graphics.beginFill(this.color)
                      .drawCircle(0, 0, circ_rad);
-      circle.x = hex.x;
-      circle.y = hex.y;
+      circle.x = hex._hex.x;
+      circle.y = hex._hex.y;
       this.circle = circle;
       stage.addChild(this.circle);
     }
@@ -125,7 +125,6 @@ $(document).ready(function() {
       createjs.Ticker.setInterval(interval);
   }
 
-
   /* radius passed in is the radius of the hex polygon */
   function drawGrid(radius) {
 
@@ -147,8 +146,8 @@ $(document).ready(function() {
         }
 
         while (y < (stage.canvas.height - 2*radius)) {
-          var hex = drawHex(x + radius, y + radius, radius, 1);
-          hex.myprops.id = id;
+          var hex = new Hex(x + radius, y + radius, radius, 1);
+          hex.id = id;
           id++;
           Hexes[idx].push(hex);
           y += 2 * hex_halfheight;
@@ -157,7 +156,7 @@ $(document).ready(function() {
       }
   }
 
-  function drawHex(x, y, radius, thickness) {
+  function Hex(x, y, radius, thickness) {
 
       var hex = new createjs.Shape();
       hex.graphics
@@ -168,23 +167,19 @@ $(document).ready(function() {
       hex.y = y;
       stage.addChild(hex);
 
-      hex.myprops = {};
-      hex.myprops.radius = radius;
-      hex.myprops.thickness = thickness;
-
-      return hex;
+      this._hex = hex;
+      this.radius = radius;
+      this.thickness = thickness;
   }
 
-  function changeHexColor(hex, color) {
-      if (!(hex.myprops && hex.myprops.radius && hex.myprops.thickness)) {
+  Hex.prototype.changeHexColor = function(color) {
+      if (!(this.radius && this.thickness)) {
           return;
       }
-      var r = hex.myprops.radius;
-      hex.graphics.clear()
+      var r = this.radius;
+      this._hex.graphics.clear()
          .beginFill(color)
          .drawPolyStar(0, 0, r, 6, 0, 0);
-
-      return hex;
   }
 
   function placePlayers(player_list) {
