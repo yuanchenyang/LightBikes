@@ -1,4 +1,3 @@
-
 var stage = new createjs.Stage("main_canvas");
 
 var Hexes = [];
@@ -19,7 +18,7 @@ function Player(_x, _y) {
 
 Player.prototype.getCurrentHex = function() {
     return Hexes[this.x][this.y];
-}
+};
 
 Player.prototype.renderOnGrid = function() {
 
@@ -38,7 +37,7 @@ Player.prototype.renderOnGrid = function() {
     this.circle = circle;
     stage.addChild(this.circle);
   }
-}
+};
 
 /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
  * upper-right direction, 1 is moving to the hex above the current one, and so
@@ -46,7 +45,7 @@ Player.prototype.renderOnGrid = function() {
  *
  * If there is a hex available in that direction for the player to move onto
  * (regardless of whether there is a Trail or another player at that hex) this
- * returns true; otherwise it returns false. 
+ * returns true; otherwise it returns false.
  */
 Player.prototype.move = function(direction) {
   if (!this.alive) {
@@ -103,11 +102,11 @@ Player.prototype.move = function(direction) {
   }
 
   return false;
-}
+};
 
 Player.prototype.kill = function() {
   this.alive = false;
-}
+};
 
 function setAnimationInterval(interval) {
 
