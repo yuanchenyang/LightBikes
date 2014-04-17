@@ -3,6 +3,17 @@
  * Module dependencies.
  */
 
+var Sequelize = require('sequelize');
+Sequelize.DB = new Sequelize('info', 'username', 'password', {
+  dialect: 'sqlite',
+  storage: 'db.sqlite'
+});
+Sequelize.DB.authenticate();
+
+require('./models');
+
+Sequelize.DB.sync({force: true});
+
 var express = require('express');
 var routes = require('./routes');
 var http = require('http');
@@ -38,6 +49,9 @@ _.each(routes, function(func, name) {
   }
   app.get(route, func);
 });
+
+var api = require('./routes/api');
+api.register(app);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

@@ -12,6 +12,7 @@
     "ejs-locals": "^1.0.2",
     "underscore": "^1.6.0",
     "nodemon": "^1.0.17",
-    "sqlite3": "^2.2.3"
+    "sqlite3": "^2.2.3",
+    "sequelize": "^1.7.2"
   }
 }
