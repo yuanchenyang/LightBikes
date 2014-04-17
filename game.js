@@ -13,10 +13,32 @@ function Player(_x, _y) {
     this.y = _y;
 
     this.name = "";
+    this.color = "black";
 }
 
 Player.prototype.getCurrentHex = function() {
     return Hexes[this.x][this.y];
+}
+
+Player.prototype.renderOnGrid = function() {
+
+  var hex = this.getCurrentHex();
+
+  if (this.circle) {
+    this.circle.x = hex.x;
+    this.circle.y = hex.y;
+  } else {
+    var circ_rad = hex.myprops.radius * 0.4;
+    var circle = new createjs.Shape();
+    circle.graphics.beginFill(this.color)
+                   .drawCircle(0, 0, circ_rad);
+    circle.x = hex.x;
+    circle.y = hex.y;
+    this.circle = circle;
+    stage.addChild(this.circle);
+  }
+
+    stage.update();
 }
 
 /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
@@ -163,21 +185,29 @@ function placePlayers(a, b, c, d) {
     if (a) {
         p1 = new Player(0, 0);
         p1.name = a;
+        p1.color = "red";
+        p1.renderOnGrid();
     }
 
     if (b) {
         p2 = new Player(Hexes.length-1, 0);
         p2.name = b;
+        p2.color = "green";
+        p2.renderOnGrid();
     }
 
     if (c) {
         p3 = new Player(0, Hexes[0].length-1);
         p3.name = c;
+        p3.color = "blue";
+        p3.renderOnGrid();
     }
 
     if (d) {
         p4 = new Player(Hexes.length -1, Hexes[Hexes.length-1].length-1);
         p4.name = d;
+        p4.color = "orange";
+        p4.renderOnGrid();
     }
 }
 
