@@ -37,8 +37,6 @@ Player.prototype.renderOnGrid = function() {
     this.circle = circle;
     stage.addChild(this.circle);
   }
-
-    stage.update();
 }
 
 /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
@@ -209,6 +207,8 @@ function placePlayers(a, b, c, d) {
         p4.color = "orange";
         p4.renderOnGrid();
     }
+
+    stage.update();
 }
 
 function init() {
