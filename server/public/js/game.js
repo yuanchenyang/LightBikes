@@ -2,19 +2,27 @@ $(document).ready(function() {
   var stage = new createjs.Stage("main_canvas");
 
   var Hexes = [];
+  Players = [];
 
   var p1 = null;
   var p2 = null;
   var p3 = null;
   var p4 = null;
 
-  function Player(_x, _y) {
-      this.x = _x;
-      this.y = _y;
+  var player_colors = ["darkred", "blue", "green", "darkorange", "purple", "black"];
+  var wall_colors = ["red", "lightblue", "lightgreen", "orange", "magenta", "grey"];
+  var start_positions = [{x:0,y:0}, {x:5,y:5}, {x:10,y:10}, {x:15,y:15}, {x:16,y:16}, {x:20,y:16}];
 
-      this.name = "";
-      this.color = "black";
+  function Player(id, name, move_function) {
+      this.x = start_positions[id].x;
+      this.y = start_positions[id].y;
+
+      this.name = name;
+      this.color = player_colors[id];
       this.alive = true;
+      this.walls = [];
+      this.wall_color = wall_colors[id];
+      this.get_next_move = move_function;
   }
 
   Player.prototype.getCurrentHex = function() {
@@ -26,18 +34,22 @@ $(document).ready(function() {
     var hex = this.getCurrentHex();
 
     if (this.circle) {
-      this.circle.x = hex.x;
-      this.circle.y = hex.y;
+      this.circle.x = hex._hex.x;
+      this.circle.y = hex._hex.y;
     } else {
-      var circ_rad = hex.myprops.radius * 0.4;
+      var circ_rad = hex.radius * 0.4;
       var circle = new createjs.Shape();
       circle.graphics.beginFill(this.color)
                      .drawCircle(0, 0, circ_rad);
-      circle.x = hex.x;
-      circle.y = hex.y;
+      circle.x = hex._hex.x;
+      circle.y = hex._hex.y;
       this.circle = circle;
       stage.addChild(this.circle);
     }
+    _.each(this.walls, function(wall) {
+      var hexAtWall = Hexes[wall[0], wall[1]];
+      hexAtWall.changeHexColor(this.wall_color);
+    });
   };
 
   /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
@@ -97,6 +109,7 @@ $(document).ready(function() {
     }
 
     if (Hexes[x_new] && Hexes[x_new][y_new]) {
+      this.walls.push([this.x, this.y]);
       this.x = x_new;
       this.y = y_new;
       return true;
@@ -120,7 +133,6 @@ $(document).ready(function() {
       createjs.Ticker.setInterval(interval);
   }
 
-
   /* radius passed in is the radius of the hex polygon */
   function drawGrid(radius) {
 
@@ -142,8 +154,8 @@ $(document).ready(function() {
         }
 
         while (y < (stage.canvas.height - 2*radius)) {
-          var hex = drawHex(x + radius, y + radius, radius, 1);
-          hex.myprops.id = id;
+          var hex = new Hex(x + radius, y + radius, radius, 1);
+          hex.id = id;
           id++;
           Hexes[idx].push(hex);
           y += 2 * hex_halfheight;
@@ -152,7 +164,7 @@ $(document).ready(function() {
       }
   }
 
-  function drawHex(x, y, radius, thickness) {
+  function Hex(x, y, radius, thickness) {
 
       var hex = new createjs.Shape();
       hex.graphics
@@ -163,57 +175,26 @@ $(document).ready(function() {
       hex.y = y;
       stage.addChild(hex);
 
-      hex.myprops = {};
-      hex.myprops.radius = radius;
-      hex.myprops.thickness = thickness;
-
-      return hex;
+      this._hex = hex;
+      this.radius = radius;
+      this.thickness = thickness;
   }
 
-  function changeHexColor(hex, color) {
-      if (!(hex.myprops && hex.myprops.radius && hex.myprops.thickness)) {
+  Hex.prototype.changeHexColor = function(color) {
+      if (!(this.radius && this.thickness)) {
           return;
       }
-      var r = hex.myprops.radius;
-      hex.graphics.clear()
+      var r = this.radius;
+      this._hex.graphics.clear()
          .beginFill(color)
          .drawPolyStar(0, 0, r, 6, 0, 0);
-
-      return hex;
   }
 
-  /* each player starts out at one corner of the board
-   * and has a name so we know who they are. if there
-   * are fewer than 4 players for a round, we just pass
-   * in null for that player */
-  function placePlayers(a, b, c, d) {
-
-      if (a) {
-          p1 = new Player(0, 0);
-          p1.name = a;
-          p1.color = "red";
-          p1.renderOnGrid();
-      }
-
-      if (b) {
-          p2 = new Player(Hexes.length-1, 0);
-          p2.name = b;
-          p2.color = "green";
-          p2.renderOnGrid();
-      }
-
-      if (c) {
-          p3 = new Player(0, Hexes[0].length-1);
-          p3.name = c;
-          p3.color = "blue";
-          p3.renderOnGrid();
-      }
-
-      if (d) {
-          p4 = new Player(Hexes.length -1, Hexes[Hexes.length-1].length-1);
-          p4.name = d;
-          p4.color = "orange";
-          p4.renderOnGrid();
+  function placePlayers(player_list) {
+      for (var i = 0; i < player_list.length; i++) {
+          var p = player_list[i];
+          Players.push(new Player(p.id, p.name, p.moveFunction));
+          Players[i].renderOnGrid();
       }
 
       stage.update();
@@ -222,7 +203,7 @@ $(document).ready(function() {
   function init() {
       setAnimationInterval(100);
       drawGrid(15);
-      placePlayers("Alpha", "Beta", "Gamma", "Delta");
+      placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }}]);
   }
 
   init();
