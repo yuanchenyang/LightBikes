@@ -45,7 +45,7 @@ $(document).ready(function() {
     }
     _.each(this.walls, function(wall) {
       var hexAtWall = Hexes[wall[0]][wall[1]];
-      hexAtWall.changeHexColor(self.wall_color);
+      hexAtWall.setWall(self.wall_color);
     });
   };
 
@@ -59,6 +59,7 @@ $(document).ready(function() {
    */
   Player.prototype.move = function(direction) {
     if (!this.alive) {
+      console.log("Player " + this.name + " is dead");
       return false;
     }
 
@@ -106,6 +107,14 @@ $(document).ready(function() {
     }
 
     if (Hexes[x_new] && Hexes[x_new][y_new]) {
+
+      var hex = Hexes[x_new][y_new];
+
+      if (hex.wall) {
+        this.kill();
+        return false;
+      }
+
       this.walls.push([this.x, this.y]);
       this.x = x_new;
       this.y = y_new;
@@ -116,6 +125,7 @@ $(document).ready(function() {
   };
 
   Player.prototype.kill = function() {
+    this.getCurrentHex().setWall("black");
     this.alive = false;
   };
 
@@ -175,9 +185,11 @@ $(document).ready(function() {
       this._hex = hex;
       this.radius = radius;
       this.thickness = thickness;
+
+      this.wall = false;
   }
 
-  Hex.prototype.changeHexColor = function(color) {
+  Hex.prototype.setWall = function(color) {
       if (!(this.radius && this.thickness)) {
           return;
       }
@@ -185,6 +197,8 @@ $(document).ready(function() {
       this._hex.graphics.clear()
          .beginFill(color)
          .drawPolyStar(0, 0, r, 6, 0, 0);
+
+      this.wall = true;
   }
 
   function placePlayers(player_list) {
