@@ -9,7 +9,8 @@ $(document).ready(function() {
   var p3 = null;
   var p4 = null;
 
-  var player_colors = ["red", "blue", "green", "orange", "purple", "black"];
+  var player_colors = ["darkred", "blue", "green", "darkorange", "purple", "black"];
+  var wall_colors = ["red", "lightblue", "lightgreen", "orange", "magenta", "grey"];
   var start_positions = [{x:0,y:0}, {x:5,y:5}, {x:10,y:10}, {x:15,y:15}, {x:16,y:16}, {x:20,y:16}];
 
   function Player(id, name, move_function) {
@@ -19,6 +20,8 @@ $(document).ready(function() {
       this.name = name;
       this.color = player_colors[id];
       this.alive = true;
+      this.walls = [];
+      this.wall_color = wall_colors[id];
       this.get_next_move = move_function;
   }
 
@@ -43,6 +46,10 @@ $(document).ready(function() {
       this.circle = circle;
       stage.addChild(this.circle);
     }
+    _.each(this.walls, function(wall) {
+      var hexAtWall = Hexes[wall[0], wall[1]];
+      hexAtWall.changeHexColor(this.wall_color);
+    });
   };
 
   /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
@@ -102,6 +109,7 @@ $(document).ready(function() {
     }
 
     if (Hexes[x_new] && Hexes[x_new][y_new]) {
+      this.walls.push([this.x, this.y]);
       this.x = x_new;
       this.y = y_new;
       return true;
