@@ -1,7 +1,10 @@
 <% layout('layout') %>
-<% script('/vendor/js/processing.js') %>
-<% script('/js/clock.js') %>
+<% script('/js/vendor/js/jquery.min.js') %>
+<% script('/vendor/js/easeljs.min.js') %>
+<% script('/js/game.js') %>
 
 <h1><%= title %></h1>
 
-<canvas id="game_board" width=600 height=600></canvas>
+<canvas id="main_canvas" width=900 height=500 style="border: 1px solid black">
+  Your browser must support Canvas!
+</canvas>
