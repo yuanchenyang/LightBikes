@@ -4,11 +4,6 @@ $(document).ready(function() {
   var Hexes = [];
   Players = [];
 
-  var p1 = null;
-  var p2 = null;
-  var p3 = null;
-  var p4 = null;
-
   var player_colors = ["darkred", "blue", "green", "darkorange", "purple", "black"];
   var wall_colors = ["red", "lightblue", "lightgreen", "orange", "magenta", "grey"];
   var start_positions = [{x:0,y:0}, {x:5,y:5}, {x:10,y:10}, {x:15,y:15}, {x:16,y:16}, {x:20,y:16}];
