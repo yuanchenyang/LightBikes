@@ -26,6 +26,8 @@ $(document).ready(function() {
 
   Player.prototype.renderOnGrid = function() {
 
+    var self = this;
+
     var hex = this.getCurrentHex();
 
     if (this.circle) {
@@ -42,8 +44,8 @@ $(document).ready(function() {
       stage.addChild(this.circle);
     }
     _.each(this.walls, function(wall) {
-      var hexAtWall = Hexes[wall[0], wall[1]];
-      hexAtWall.changeHexColor(this.wall_color);
+      var hexAtWall = Hexes[wall[0]][wall[1]];
+      hexAtWall.changeHexColor(self.wall_color);
     });
   };
 
@@ -198,7 +200,8 @@ $(document).ready(function() {
   function init() {
       setAnimationInterval(100);
       drawGrid(15);
-      placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }}]);
+      placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }},
+                    {id:1, name: "Beta", moveFunction: function() { return 1; }}]);
   }
 
   init();
