@@ -16,7 +16,10 @@
     "sqlite3": "^2.2.3",
     "sequelize": "^1.7.2",
     "q": "^1.0.1",
-    "coffee-script": "^1.7.1"
+    "coffee-script": "^1.7.1",
+    "commander": "^2.2.0",
+    "mathjs": "^0.20.0",
+    "jquery": "^2.1.0"
   },
   "devDependencies": {
     "grunt": "^0.4.4",
