@@ -1,4 +1,8 @@
-var Bot = (function() {
+if (typeof window == 'undefined') {
+  global.window = global;
+}
+
+window.Bot = (function() {
   var registrants = {};
 
   return {
@@ -9,4 +13,4 @@ var Bot = (function() {
       return registrants[name];
     }
   };
-});
+})();
