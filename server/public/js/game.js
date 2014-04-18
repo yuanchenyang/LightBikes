@@ -4,11 +4,6 @@ $(document).ready(function() {
   var Hexes = [];
   Players = [];
 
-  var p1 = null;
-  var p2 = null;
-  var p3 = null;
-  var p4 = null;
-
   var player_colors = ["darkred", "blue", "green", "darkorange", "purple", "black"];
   var wall_colors = ["red", "lightblue", "lightgreen", "orange", "magenta", "grey"];
   var start_positions = [{x:0,y:0}, {x:5,y:5}, {x:10,y:10}, {x:15,y:15}, {x:16,y:16}, {x:20,y:16}];
@@ -31,6 +26,8 @@ $(document).ready(function() {
 
   Player.prototype.renderOnGrid = function() {
 
+    var self = this;
+
     var hex = this.getCurrentHex();
 
     if (this.circle) {
@@ -47,8 +44,8 @@ $(document).ready(function() {
       stage.addChild(this.circle);
     }
     _.each(this.walls, function(wall) {
-      var hexAtWall = Hexes[wall[0], wall[1]];
-      hexAtWall.changeHexColor(this.wall_color);
+      var hexAtWall = Hexes[wall[0]][wall[1]];
+      hexAtWall.setWall(self.wall_color);
     });
   };
 
@@ -62,6 +59,7 @@ $(document).ready(function() {
    */
   Player.prototype.move = function(direction) {
     if (!this.alive) {
+      console.log("Player " + this.name + " is dead");
       return false;
     }
 
@@ -109,6 +107,14 @@ $(document).ready(function() {
     }
 
     if (Hexes[x_new] && Hexes[x_new][y_new]) {
+
+      var hex = Hexes[x_new][y_new];
+
+      if (hex.wall) {
+        this.kill();
+        return false;
+      }
+
       this.walls.push([this.x, this.y]);
       this.x = x_new;
       this.y = y_new;
@@ -119,6 +125,7 @@ $(document).ready(function() {
   };
 
   Player.prototype.kill = function() {
+    this.getCurrentHex().setWall("black");
     this.alive = false;
   };
 
@@ -178,9 +185,11 @@ $(document).ready(function() {
       this._hex = hex;
       this.radius = radius;
       this.thickness = thickness;
+
+      this.wall = false;
   }
 
-  Hex.prototype.changeHexColor = function(color) {
+  Hex.prototype.setWall = function(color) {
       if (!(this.radius && this.thickness)) {
           return;
       }
@@ -188,6 +197,8 @@ $(document).ready(function() {
       this._hex.graphics.clear()
          .beginFill(color)
          .drawPolyStar(0, 0, r, 6, 0, 0);
+
+      this.wall = true;
   }
 
   function placePlayers(player_list) {
@@ -203,8 +214,22 @@ $(document).ready(function() {
   function init() {
       setAnimationInterval(100);
       drawGrid(15);
-      placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }}]);
+      placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }},
+                    {id:1, name: "Beta", moveFunction: function() { return 5; }}]);
   }
 
+  function performTurn() {
+    _.each(Players, function(p) {
+      var next = p.get_next_move(); //TODO make sure we pass in the correct parameters here
+      if ([0,1,2,3,4,5].indexOf(next) >= 0) {
+        p.move(next);
+        p.renderOnGrid();
+      } else {
+        console.log(next + "is an invalid move for player: " + p.name);
+      }
+    });
+  }
+
+  window.performTurn = performTurn;
   init();
 });
