@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon app.js",
-    "comp": "node tourney.js"
+    "comp": "coffee tourney.coffee"
   },
   "dependencies": {
     "express": "3.4.8",
@@ -15,7 +15,8 @@
     "nodemon": "^1.0.17",
     "sqlite3": "^2.2.3",
     "sequelize": "^1.7.2",
-    "q": "^1.0.1"
+    "q": "^1.0.1",
+    "coffee-script": "^1.7.1"
   },
   "devDependencies": {
     "grunt": "^0.4.4",
