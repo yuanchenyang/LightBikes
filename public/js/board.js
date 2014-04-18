@@ -1,3 +1,3 @@
-function Board(size) {
+window.Board = function(size) {
   this.hexes = [];
-}
+};

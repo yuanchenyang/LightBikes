@@ -1,9 +1,15 @@
 require('shelljs/global')
+
+global.window = global
+global._ = require('underscore')
+
+require('./public/js/player')
 require('./public/js/bot')
+require('./public/js/board')
+require('./public/js/game')
 
 Http    = require('http')
 Q       = require('Q')
-_       = require('underscore')
 fs      = require('fs')
 
 db      = require('./db')

@@ -1,4 +1,4 @@
-function Game(player_names, simulation) {
+window.Game = function(player_names, simulation) {
   this.players = _.map(player_names, function(player_name, i) {
     return new Player(i, player_name);
   });
@@ -9,7 +9,11 @@ function Game(player_names, simulation) {
     setAnimationInterval(100);
     drawGrid(15);
   }
-}
+};
+
+Game.prototype.run = function(callback) {
+  console.log("It's not implemented, yo");
+};
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {

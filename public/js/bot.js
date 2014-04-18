@@ -1,7 +1,3 @@
-if (typeof window == 'undefined') {
-  global.window = global;
-}
-
 window.Bot = (function() {
   var registrants = {};
 
