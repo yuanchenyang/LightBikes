@@ -1,235 +1,148 @@
-$(document).ready(function() {
-  var stage = new createjs.Stage("main_canvas");
+function Game(player_names, simulation) {
+  this.players = _.map(player_names, function(player_name, i) {
+    return new Player(i, player_name);
+  });
+  this.board = new Board(15);
+  this.sim = simulation;
 
-  var Hexes = [];
-  Players = [];
+  if (!this.sim) {
+    setAnimationInterval(100);
+    drawGrid(15);
+  }
+}
 
-  var player_colors = ["darkred", "blue", "green", "darkorange", "purple", "black"];
-  var wall_colors = ["red", "lightblue", "lightgreen", "orange", "magenta", "grey"];
-  var start_positions = [{x:0,y:0}, {x:5,y:5}, {x:10,y:10}, {x:15,y:15}, {x:16,y:16}, {x:20,y:16}];
+Game.prototype.setAnimationInterval = function(interval) {
+  createjs.Ticker.addEventListener('tick', function() {
+    //console.log("Tick");
+    stage.update();
+  });
+  createjs.Ticker.setInterval(interval);
+};
 
-  function Player(id, name, move_function) {
-      this.x = start_positions[id].x;
-      this.y = start_positions[id].y;
+/* radius passed in is the radius of the hex polygon */
+Game.prototype.drawGrid = function(radius) {
+  var id = 0;
+  var side_offset = 2;
+  var x = side_offset;
+  var h_rad = 0.5*radius;
+  var hex_halfheight = Math.sqrt(radius*radius - h_rad*h_rad);
 
-      this.name = name;
-      this.color = player_colors[id];
-      this.alive = true;
-      this.walls = [];
-      this.wall_color = wall_colors[id];
-      this.get_next_move = move_function;
+  while (x < (stage.canvas.width - 2*radius)) {
+    var y = side_offset;
+    var idx = this.board.hexes.push([]) - 1;
+
+    if (idx % 2 !== 0) {
+      y += hex_halfheight;
+    }
+
+    while (y < (stage.canvas.height - 2*radius)) {
+      var hex = new Hex(x + radius, y + radius, radius, 1);
+      hex.id = id;
+      id++;
+      this.board.hexes[idx].push(hex);
+      y += 2 * hex_halfheight;
+    }
+    x += 1.5*radius;
+  }
+};
+
+Game.prototype.placePlayers = function(player_list) {
+  for (var i = 0; i < player_list.length; i++) {
+    var p = player_list[i];
+    this.players.push(new Player(p.id, p.name, p.moveFunction));
+    this.players[i].renderOnGrid();
+  }
+  stage.update();
+};
+
+/* direction is an integer from 0 to 5 where 0 is moving to the hex in an
+ * upper-right direction, 1 is moving to the hex above the current one, and so
+ * on
+ *
+ * If there is a hex available in that direction for the player to move onto
+ * (regardless of whether there is a Trail or another player at that hex) this
+ * returns true; otherwise it returns false.
+ */
+Game.prototype.move_player = function(player, direction) {
+  if (!player.alive) {
+    console.log("Player " + player.name + " is dead");
+    return false;
   }
 
-  Player.prototype.getCurrentHex = function() {
-      return Hexes[this.x][this.y];
-  };
+  var x_cur = player.x;
+  var y_cur = player.y;
 
-  Player.prototype.renderOnGrid = function() {
+  var x_new;
+  var y_new;
 
-    var self = this;
+  var even_col = x_cur % 2 === 0;
 
-    var hex = this.getCurrentHex();
+  switch (direction) {
+    case 0:
+      x_new = x_cur + 1;
+      y_new = even_col ? y_cur - 1 : y_cur;
+      break;
 
-    if (this.circle) {
-      this.circle.x = hex._hex.x;
-      this.circle.y = hex._hex.y;
-    } else {
-      var circ_rad = hex.radius * 0.4;
-      var circle = new createjs.Shape();
-      circle.graphics.beginFill(this.color)
-                     .drawCircle(0, 0, circ_rad);
-      circle.x = hex._hex.x;
-      circle.y = hex._hex.y;
-      this.circle = circle;
-      stage.addChild(this.circle);
-    }
-    _.each(this.walls, function(wall) {
-      var hexAtWall = Hexes[wall[0]][wall[1]];
-      hexAtWall.setWall(self.wall_color);
-    });
-  };
+    case 1:
+      y_new = y_cur - 1;
+      x_new = x_cur;
+      break;
 
-  /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
-   * upper-right direction, 1 is moving to the hex above the current one, and so
-   * on
-   *
-   * If there is a hex available in that direction for the player to move onto
-   * (regardless of whether there is a Trail or another player at that hex) this
-   * returns true; otherwise it returns false.
-   */
-  Player.prototype.move = function(direction) {
-    if (!this.alive) {
-      console.log("Player " + this.name + " is dead");
+    case 2:
+      x_new = x_cur - 1;
+      y_new = even_col ? y_cur - 1: y_cur;
+      break;
+
+    case 3:
+      x_new = x_cur - 1;
+      y_new = even_col ? y_cur: y_cur + 1;
+      break;
+
+    case 4:
+      y_new = y_cur + 1;
+      x_new = x_cur;
+      break;
+
+    case 5:
+      x_new = x_cur + 1;
+      y_new = even_col ? y_cur : y_cur + 1;
+      break;
+
+    default:
+      return false;
+  }
+
+  if (this.board.hexes[x_new] && this.board.hexes[x_new][y_new]) {
+
+    var hex = this.board.hexes[x_new][y_new];
+
+    if (hex.wall) {
+      player.kill();
       return false;
     }
 
-    var x_cur = this.x;
-    var y_cur = this.y;
+    player.walls.push([player.x, player.y]);
+    player.x = x_new;
+    player.y = y_new;
+    return true;
+  }
 
-    var x_new;
-    var y_new;
+  return false;
+};
 
-    var even_col = x_cur % 2 === 0;
-
-    switch (direction) {
-      case 0:
-        x_new = x_cur + 1;
-        y_new = even_col ? y_cur - 1 : y_cur;
-        break;
-
-      case 1:
-        y_new = y_cur - 1;
-        x_new = x_cur;
-        break;
-
-      case 2:
-        x_new = x_cur - 1;
-        y_new = even_col ? y_cur - 1: y_cur;
-        break;
-
-      case 3:
-        x_new = x_cur - 1;
-        y_new = even_col ? y_cur: y_cur + 1;
-        break;
-
-      case 4:
-        y_new = y_cur + 1;
-        x_new = x_cur;
-        break;
-
-      case 5:
-        x_new = x_cur + 1;
-        y_new = even_col ? y_cur : y_cur + 1;
-        break;
-
-      default:
-        return false;
-    }
-
-    if (Hexes[x_new] && Hexes[x_new][y_new]) {
-
-      var hex = Hexes[x_new][y_new];
-
-      if (hex.wall) {
-        this.kill();
-        return false;
+Game.prototype.next_turn = function(done) {
+  done = _.after(this.players.length, done);
+  _.each(this.players, function(p) {
+    p.get_next_move(this.board.get_copy, this.player_states[p.name], _.once(function(move) {
+      move = Math.floor(move);
+      if (move < 0 || move > 5 || move == (last_move + 3) % 6) {
+        console.log("Invalid move for player: " + p.name);
+        next = p.last_move;
       }
-
-      this.walls.push([this.x, this.y]);
-      this.x = x_new;
-      this.y = y_new;
-      return true;
-    }
-
-    return false;
-  };
-
-  Player.prototype.kill = function() {
-    this.getCurrentHex().setWall("black");
-    this.alive = false;
-  };
-
-  function setAnimationInterval(interval) {
-
-      createjs.Ticker.addEventListener('tick', function() {
-          //console.log("Tick");
-
-          stage.update();
-      });
-
-      createjs.Ticker.setInterval(interval);
-  }
-
-  /* radius passed in is the radius of the hex polygon */
-  function drawGrid(radius) {
-
-      var id = 0;
-      var side_offset = 2;
-
-      var x = side_offset;
-
-      var h_rad = 0.5*radius;
-      var hex_halfheight = Math.sqrt(radius*radius - h_rad*h_rad);
-
-      while (x < (stage.canvas.width - 2*radius)) {
-
-        var y = side_offset;
-        var idx = Hexes.push([]) - 1;
-
-        if (idx % 2 !== 0) {
-          y += hex_halfheight;
-        }
-
-        while (y < (stage.canvas.height - 2*radius)) {
-          var hex = new Hex(x + radius, y + radius, radius, 1);
-          hex.id = id;
-          id++;
-          Hexes[idx].push(hex);
-          y += 2 * hex_halfheight;
-        }
-        x += 1.5*radius;
-      }
-  }
-
-  function Hex(x, y, radius, thickness) {
-
-      var hex = new createjs.Shape();
-      hex.graphics
-          .setStrokeStyle(thickness)
-          .beginStroke("#000")
-          .drawPolyStar(0, 0, radius, 6, 0, 0);
-      hex.x = x;
-      hex.y = y;
-      stage.addChild(hex);
-
-      this._hex = hex;
-      this.radius = radius;
-      this.thickness = thickness;
-
-      this.wall = false;
-  }
-
-  Hex.prototype.setWall = function(color) {
-      if (!(this.radius && this.thickness)) {
-          return;
-      }
-      var r = this.radius;
-      this._hex.graphics.clear()
-         .beginFill(color)
-         .drawPolyStar(0, 0, r, 6, 0, 0);
-
-      this.wall = true;
-  }
-
-  function placePlayers(player_list) {
-      for (var i = 0; i < player_list.length; i++) {
-          var p = player_list[i];
-          Players.push(new Player(p.id, p.name, p.moveFunction));
-          Players[i].renderOnGrid();
-      }
-
-      stage.update();
-  }
-
-  function init() {
-      setAnimationInterval(100);
-      drawGrid(15);
-      placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }},
-                    {id:1, name: "Beta", moveFunction: function() { return 5; }}]);
-  }
-
-  function performTurn() {
-    _.each(Players, function(p) {
-      var next = p.get_next_move(); //TODO make sure we pass in the correct parameters here
-      if ([0,1,2,3,4,5].indexOf(next) >= 0) {
-        p.move(next);
-        p.renderOnGrid();
-      } else {
-        console.log(next + "is an invalid move for player: " + p.name);
-      }
-    });
-  }
-
-  window.performTurn = performTurn;
-  init();
-});
+      p.move(move);
+      p.renderOnGrid();
+      done();
+    }));
+    _.delay(done, 1000);
+  }, this);
+};
