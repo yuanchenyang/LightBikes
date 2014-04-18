@@ -14,5 +14,9 @@
     "nodemon": "^1.0.17",
     "sqlite3": "^2.2.3",
     "sequelize": "^1.7.2"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-sequelize": "^1.1.1"
   }
 }

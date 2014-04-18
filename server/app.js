@@ -3,17 +3,7 @@
  * Module dependencies.
  */
 
-var Sequelize = require('sequelize');
-Sequelize.DB = new Sequelize('info', 'username', 'password', {
-  dialect: 'sqlite',
-  storage: 'db.sqlite'
-});
-Sequelize.DB.authenticate();
-
-require('./models');
-
-Sequelize.DB.sync({force: true});
-
+var db = require('./db');
 var express = require('express');
 var routes = require('./routes');
 var http = require('http');

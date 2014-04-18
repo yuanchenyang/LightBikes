@@ -5,3 +5,4 @@ var Team = Sequelize.DB.define('Team', {
   repo: Sequelize.STRING,
 });
 
+module.exports = Team;
