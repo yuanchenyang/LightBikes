@@ -215,8 +215,21 @@ $(document).ready(function() {
       setAnimationInterval(100);
       drawGrid(15);
       placePlayers([{id:0, name: "Alpha", moveFunction: function() { return 5; }},
-                    {id:1, name: "Beta", moveFunction: function() { return 1; }}]);
+                    {id:1, name: "Beta", moveFunction: function() { return 5; }}]);
   }
 
+  function performTurn() {
+    _.each(Players, function(p) {
+      var next = p.get_next_move(); //TODO make sure we pass in the correct parameters here
+      if ([0,1,2,3,4,5].indexOf(next) >= 0) {
+        p.move(next);
+        p.renderOnGrid();
+      } else {
+        console.log(next + "is an invalid move for player: " + p.name);
+      }
+    });
+  }
+
+  window.performTurn = performTurn;
   init();
 });
