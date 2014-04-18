@@ -4,4 +4,4 @@ $document.ready(function() {
     //Display results
     console.log(results);
   });
-}
+});

@@ -17,7 +17,6 @@ function Player(id, name) {
 }
 
 Player.prototype.renderOnGrid = function(grid) {
-
   var self = this;
   var hex = grid.hexes[this.x][this.y];
 
@@ -39,7 +38,6 @@ Player.prototype.renderOnGrid = function(grid) {
     hexAtWall.setWall(self.wall_color);
   });
 };
-
 
 Player.prototype.kill = function() {
   this.getCurrentHex().setWall("black");

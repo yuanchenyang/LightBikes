@@ -1,5 +1,4 @@
 function Hex(x, y, radius, thickness) {
-
     var hex = new createjs.Shape();
     hex.graphics
         .setStrokeStyle(thickness)
@@ -26,5 +25,5 @@ Hex.prototype.setWall = function(color) {
        .drawPolyStar(0, 0, r, 6, 0, 0);
 
     this.wall = true;
-}
+};
 

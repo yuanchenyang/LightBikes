@@ -1,12 +1,11 @@
-function Game(player_names, simulation)
+function Game(player_names, simulation) {
   this.players = _.map(player_names, function(player_name, i) {
     return new Player(i, player_name);
-  };
+  });
   this.board = new Board(15);
   this.sim = simulation;
 
   if (!this.sim) {
-    this.stage;
     setAnimationInterval(100);
     drawGrid(15);
   }
@@ -18,10 +17,10 @@ Game.prototype.setAnimationInterval = function(interval) {
     stage.update();
   });
   createjs.Ticker.setInterval(interval);
-}
+};
 
-  /* radius passed in is the radius of the hex polygon */
-Game.prototype.drawGrid function(radius) {
+/* radius passed in is the radius of the hex polygon */
+Game.prototype.drawGrid = function(radius) {
   var id = 0;
   var side_offset = 2;
   var x = side_offset;
@@ -45,7 +44,7 @@ Game.prototype.drawGrid function(radius) {
     }
     x += 1.5*radius;
   }
-}
+};
 
 Game.prototype.placePlayers = function(player_list) {
   for (var i = 0; i < player_list.length; i++) {
@@ -54,7 +53,7 @@ Game.prototype.placePlayers = function(player_list) {
     this.players[i].renderOnGrid();
   }
   stage.update();
-}
+};
 
 /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
  * upper-right direction, 1 is moving to the hex above the current one, and so
@@ -132,7 +131,7 @@ Game.prototype.move_player = function(player, direction) {
 };
 
 Game.prototype.next_turn = function(done) {
-  var done = _.after(this.players.length, done);
+  done = _.after(this.players.length, done);
   _.each(this.players, function(p) {
     p.get_next_move(this.board.get_copy, this.player_states[p.name], _.once(function(move) {
       move = Math.floor(move);
@@ -146,4 +145,4 @@ Game.prototype.next_turn = function(done) {
     }));
     _.delay(done, 1000);
   }, this);
-}
+};
