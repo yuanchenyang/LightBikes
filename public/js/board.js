@@ -24,5 +24,60 @@ Board.prototype.get_hex_at = function(x, y) {
 };
 
 Board.prototype.get_copy = function() {
-  return new Board();
+  return _.cloneDeep(this);
+};
+
+Board.prototype.new_coords_from_dir = function(x, y, dir) {
+  var even_col = x % 2 === 1;
+  switch (dir) {
+    case 0:
+      x_new = x + 1;
+      y_new = even_col ? y - 1 : y;
+      break;
+    case 1:
+      x_new = x;
+      y_new = y - 1;
+      break;
+    case 2:
+      x_new = x - 1;
+      y_new = even_col ? y - 1: y;
+      break;
+    case 3:
+      x_new = x - 1;
+      y_new = even_col ? y : y + 1;
+      break;
+    case 4:
+      y_new = y + 1;
+      x_new = x;
+      break;
+    case 5:
+      x_new = x + 1;
+      y_new = even_col ? y : y + 1;
+      break;
+    default:
+      return null;
+  }
+  return {x: x_new, y: y_new};
+};
+
+Board.prototype.surrounding_tiles = function(x, y) {
+  return _.map([0, 1, 2, 3, 4, 5], function(dir) {
+    var coord = this.new_coords_from_dir(x, y, dir);
+    return coord;
+  }, this);
+};
+
+Board.prototype.safe_surrounding_tiles = function(x, y) {
+  return _.reject(this.surrounding_tiles(x, y), function(coord) {
+    var hex = this.get_hex_at(coord.x, coord.y);
+    return (_.isNull(hex) || !_.isNull(hex.player));
+  }, this);
+};
+
+Board.prototype.safe_directions = function(x, y) {
+  return _.reject([0, 1, 2, 3, 4, 5], function(dir) {
+    var coord = this.new_coords_from_dir(x, y, dir);
+    var hex = this.get_hex_at(coord.x, coord.y);
+    return (_.isNull(hex) || !_.isNull(hex.player));
+  }, this);
 };

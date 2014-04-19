@@ -91,65 +91,24 @@ Game.prototype.placePlayers = function(player_list) {
  * (regardless of whether there is a Trail or another player at that hex) this
  * returns true; otherwise it returns false.
  */
-Game.prototype.move_player = function(player, direction) {
+Game.prototype.move_player = function(player, dir) {
   if (!player.alive) {
     console.log("Player " + player.id + " is dead");
     return false;
   }
+  var coord = this.board.new_coords_from_dir(player.x, player.y, dir);
+  if (_.isNull(coord)) return false;
 
-  var x_cur = player.x;
-  var y_cur = player.y;
-
-  var x_new;
-  var y_new;
-
-  var even_col = x_cur % 2 === 1;
-
-  switch (direction) {
-    case 0:
-      x_new = x_cur + 1;
-      y_new = even_col ? y_cur - 1 : y_cur;
-      break;
-
-    case 1:
-      y_new = y_cur - 1;
-      x_new = x_cur;
-      break;
-
-    case 2:
-      x_new = x_cur - 1;
-      y_new = even_col ? y_cur - 1: y_cur;
-      break;
-
-    case 3:
-      x_new = x_cur - 1;
-      y_new = even_col ? y_cur : y_cur + 1;
-      break;
-
-    case 4:
-      y_new = y_cur + 1;
-      x_new = x_cur;
-      break;
-
-    case 5:
-      x_new = x_cur + 1;
-      y_new = even_col ? y_cur : y_cur + 1;
-      break;
-
-    default:
-      return false;
-  }
-
-  var hex = this.board.get_hex_at(x_new, y_new);
+  var hex = this.board.get_hex_at(coord.x, coord.y);
   if (_.isNull(hex) || !_.isNull(hex.player)) {
     player.kill();
   } else {
     hex.player = player;
   }
   player.walls.push([player.x, player.y]);
-  this.board.get_hex_at(x_cur, y_cur).wall = true;
-  player.x = x_new;
-  player.y = y_new;
+  this.board.get_hex_at(player.x, player.y).wall = true;
+  player.x = coord.x;
+  player.y = coord.y;
   return true;
 };
 
@@ -165,7 +124,7 @@ Game.prototype.next_turn = function(done) {
   };
 
   _.each(this.players, function(p, i) {
-    p.get_next_move(this.board.get_copy(), this.player_states[i], _.once(function(move) {
+    p.get_next_move(this.hash_state(p), this.player_states[i], _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
         next = p.last_move;
       }
@@ -178,4 +137,13 @@ Game.prototype.next_turn = function(done) {
     if (!this.sim)
       _.delay(d, 1000, p.id);
   }, this);
+};
+
+Game.prototype.hash_state = function(player) {
+  var new_board = this.board.get_copy();
+  var me = player.hash_state();
+  var them = _.reject(this.players, function(p) {
+    return player.name == p.name;
+  })[0].hash_state();
+  return { board: new_board, me: me, them: them};
 };
