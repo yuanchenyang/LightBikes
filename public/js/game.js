@@ -144,7 +144,7 @@ Game.prototype.hash_state = function(player) {
   var new_board = this.board.get_copy();
   var me = player.hash_state();
   var them = _.reject(this.players, function(p) {
-    return player.name == p.name;
+    return player.id == p.id;
   })[0].hash_state();
   return { board: new_board, me: me, them: them};
 };
