@@ -103,13 +103,35 @@ Board.prototype.safe_directions = function(c) {
 };
 
 Board.prototype.transform_coord = function(coord) {
-  var new_y = coord.y + Math.floor(coord.x / 2);
-  var calc_z = -(coord.x + new_y);
-  return {x: coord.x, y: new_y, z: calc_z};
+  return this.get_hex_at(coord).transform();
 };
 
-Board.prototype.get_dist = function(c1, c2) {
+Board.prototype._get_dist = function(c1, c2) {
   var t_c1 = this.transform_coord(c1);
   var t_c2 = this.transform_coord(c2);
   return Math.max(t_c2.x - t_c1.x, t_c2.y - t_c1.y, t_c2.z - t_c1.z);
 };
+
+Board.prototype.get_dist = function(c1, c2) {
+  return Math.max(
+    this._get_dist(c1,c2),
+    this._get_dist(c2,c1)
+  );
+};
+
+Board.prototype.add_click_handlers = function() {
+  var first_hex = null;
+  _.each(this.hexes, function(row) {
+    _.each(row, function(hex) {
+      hex.hex.addEventListener("click", _.throttle(function(evt) {
+        if (_.isNull(first_hex)) {
+          first_hex = hex;
+        } else {
+          console.log(this.get_dist(hex, first_hex));
+          console.log(this.get_dist(first_hex, hex));
+          first_hex = null;
+        }
+      }.bind(this), 1000));
+    }, this);
+  }, this);
+}

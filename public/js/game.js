@@ -15,6 +15,7 @@ window.Game = function(player_names, simulation) {
   }, this);
 
   if (!this.sim) {
+    this.board.add_click_handlers();
     this.stage = new createjs.Stage("main_canvas");
     this.setAnimationInterval(100);
   }
