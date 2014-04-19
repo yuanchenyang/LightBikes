@@ -26,13 +26,15 @@ Game.prototype.run = function(callback) {
 };
 
 Game.prototype.winner = function() {
-  living_players = _.reject(this.players, function(p) { return !p.alive; });
-  if (living_players.length == 1) {
-    return living_players[0];
-  } else if (living_players <= 0) {
-    return true;
-  } else {
+  a = _.map(this.players, function(p) { return p.alive; });
+  if (a[0] && a[1]) {
     return false;
+  } else if (a[0]) {
+    return [1, 0];
+  } else if (a[1]) {
+    return [0, 1];
+  } else {
+    return [0.5, 0.5];
   }
 };
 
@@ -40,16 +42,12 @@ Game.prototype.round = function(callback) {
   var wp = this.winner();
   if (wp) {
     callback(wp);
-  } else if (this.rounds > 1000) {
-    callback({
-      error: "TOO MANY ROUNDS"
-    });
   } else {
     this.rounds++;
     if (!this.sim) {
       _.delay(function() {
         this.next_turn(this.round.bind(this, callback));
-      }.bind(this), 2000);
+      }.bind(this), 500);
     } else {
       this.next_turn(this.round.bind(this, callback));
     }
@@ -157,11 +155,12 @@ Game.prototype.move_player = function(player, direction) {
 
 Game.prototype.next_turn = function(done) {
   var needed_players = _.map(this.players, function(p) { return p.id; });
+  var odone = _.once(done);
 
   var d = function(id) {
     needed_players = _.without(needed_players, id);
     if (needed_players.length === 0) {
-      done();
+      odone();
     }
   };
 
