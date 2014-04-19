@@ -26,15 +26,13 @@ Game.prototype.run = function(callback) {
 };
 
 Game.prototype.winner = function() {
-  a = _.map(this.players, function(p) { return p.alive; });
-  if (a[0] && a[1]) {
-    return false;
-  } else if (a[0]) {
-    return [1, 0];
-  } else if (a[1]) {
-    return [0, 1];
+  living_players = _.reject(this.players, function(p) { return !p.alive; });
+  if (living_players.length == 1) {
+    return living_players[0];
+  } else if (living_players <= 0) {
+    return true;
   } else {
-    return [0.5, 0.5];
+    return false;
   }
 };
 
@@ -42,11 +40,15 @@ Game.prototype.round = function(callback) {
   var wp = this.winner();
   if (wp) {
     callback(wp);
+  } else if (this.rounds > 1000) {
+    callback({
+      error: "TOO MANY ROUNDS"
+    });
   } else {
     this.rounds++;
     if (!this.sim) {
       _.delay(function() {
-        this.next_turn(this.round.bind(this, callback));
+        this.next_turn(this.round.bind(this, callback))
       }.bind(this), 500);
     } else {
       this.next_turn(this.round.bind(this, callback));
@@ -56,7 +58,7 @@ Game.prototype.round = function(callback) {
 
 Game.prototype.render = function() {
   var width_radius = (this.stage.canvas.width - 4) / (1.5 * this.board.width);
-  var height_radius = (this.stage.canvas.height - 4) / ((this.board.height + 0.5) * Math.sqrt(3));
+  var height_radius = (this.stage.canvas.height - 4) / ((this.board.height + .5) * Math.sqrt(3));
   var radius = Math.min(width_radius, height_radius);
 
   _.each(this.board.hexes, function(row) {
@@ -65,7 +67,7 @@ Game.prototype.render = function() {
     }, this);
   }, this);
   this.stage.update();
-};
+}
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {
@@ -133,7 +135,7 @@ Game.prototype.move_player = function(player, direction) {
 
     case 5:
       x_new = x_cur + 1;
-      y_new = even_col ? y_cur + 1 : y_cur;
+      y_new = even_col ? y_cur : y_cur + 1;
       break;
 
     default:
@@ -166,7 +168,8 @@ Game.prototype.next_turn = function(done) {
   _.each(this.players, function(p) {
     p.get_next_move(this.board.get_copy(), this.player_states[p.name], _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
-        move = p.last_move;
+        console.log("Invalid move for player: " + p.name);
+        next = p.last_move;
       }
       move = Math.floor(move);
       this.move_player(p, move);
