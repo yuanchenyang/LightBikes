@@ -1,3 +1,4 @@
+require("shelljs/global")
 program = require("commander")
 
 json = (val) ->
@@ -29,18 +30,36 @@ fs = require('fs')
 
 vm.runInNewContext(fs.readFileSync(program.bot).toString(), sandbox)
 
+sock = null
+
 # Bot is loaded!
+request = (sock, board_state, player_state) ->
+  fun(board_state, player_state, (move) ->
+    sock.write(JSON.stringify(player_state) + "\n")
+    sock.write(JSON.stringify({move: move}) + "\n")
+    sock.end()
+  )
+
+
 net = require('net')
 
-net.socket.connect("/tmp/LightBikeBot-#{name}", (conn) ->
-  socket.setEncoding("utf8")
+s = net.createServer((conn) ->
+  buf = ""
+  conn.setEncoding("utf8")
   conn.on('data', (d) ->
-    d.split("\n")
+    buf += d
+    rows = buf.split("\n")
+    if rows.length >= 2
+      resp = rows[0..1]
+      if (resp[0] != "" && resp[1] != "")
+        request(conn, JSON.parse(resp[0]), JSON.parse(resp[1]))
+        rows = rows[2..]
+    buf = rows.join("\n")
   )
 )
 
+bname = "/tmp/LightBikeBot-#{name}"
 
-fun(program.state, program.player, (move) ->
-  console.log(JSON.stringify(program.player))
-  process.exit(move)
+exec("rm -rf #{bname}", () ->
+  s.listen(bname)
 )

@@ -1,9 +1,12 @@
 window.Game = function(player_names, simulation) {
-  this.board = new Board(25, 52);
+  this.board = new Board(52, 25);
   this.sim = simulation;
   this.players = _.map(player_names, function(player_name, i) {
     var player = new Player(i, player_name);
-    this.board.hexes[player.x][player.y].setPlayer(player);
+    this.board.get_hex_at(player.x, player.y).setPlayer(player);
+    if (!this.sim) {
+      player.circle = new createjs.Shape();
+    }
     return player;
   }, this);
   this.player_states = {};
@@ -45,7 +48,7 @@ Game.prototype.round = function(callback) {
     this.rounds++;
     if (!this.sim) {
       _.delay(function() {
-        this.next_turn(this.round.bind(this, callback))
+        this.next_turn(this.round.bind(this, callback));
       }.bind(this), 500);
     } else {
       this.next_turn(this.round.bind(this, callback));
@@ -54,8 +57,8 @@ Game.prototype.round = function(callback) {
 };
 
 Game.prototype.render = function() {
-  var width_radius = (this.stage.canvas.width - 4) / (1.5 * this.board.hexes[0].length);
-  var height_radius = (this.stage.canvas.height - 4) / ((this.board.hexes.length + .5) * Math.sqrt(3));
+  var width_radius = (this.stage.canvas.width - 4) / (1.5 * this.board.width);
+  var height_radius = (this.stage.canvas.height - 4) / ((this.board.height + 0.5) * Math.sqrt(3));
   var radius = Math.min(width_radius, height_radius);
 
   _.each(this.board.hexes, function(row) {
@@ -64,7 +67,7 @@ Game.prototype.render = function() {
     }, this);
   }, this);
   this.stage.update();
-}
+};
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {
@@ -139,15 +142,14 @@ Game.prototype.move_player = function(player, direction) {
       return false;
   }
 
-  if (this.board.hexes[x_new] && this.board.hexes[x_new][y_new]) {
-    var hex = this.board.hexes[x_new][y_new];
+  var hex = this.board.get_hex_at(x_new, y_new);
+  if (_.isNull(hex) || !_.isNull(hex.player)) {
+    player.kill();
+  } else {
     hex.player = player;
   }
-  if (_.isUndefined(hex) || !_.isNull(hex.player)) {
-    player.kill();
-  }
   player.walls.push([player.x, player.y]);
-  this.board.hexes[x_cur][y_cur].wall = true;
+  this.board.get_hex_at(x_cur, y_cur).wall = true;
   player.x = x_new;
   player.y = y_new;
   return true;
@@ -166,7 +168,6 @@ Game.prototype.next_turn = function(done) {
   _.each(this.players, function(p) {
     p.get_next_move(this.board.get_copy(), this.player_states[p.name], _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
-        console.log("Invalid move for player: " + p.name);
         next = p.last_move;
       }
       move = Math.floor(move);
