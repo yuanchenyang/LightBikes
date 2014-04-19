@@ -24,7 +24,15 @@ Board.prototype.get_hex_at = function(x, y) {
 };
 
 Board.prototype.get_copy = function() {
-  return _.cloneDeep(this);
+  var new_board = new Board(this.width, this.height);
+  _.each(this.hexes, function(row) {
+    _.each(row, function(hex) {
+      var new_hex = new_board.get_hex_at(hex.x, hex.y);
+      new_hex.player = hex.player;
+      new_hex.wall = hex.wall;
+    }, this);
+  }, this);
+  return new_board;
 };
 
 Board.prototype.new_coords_from_dir = function(x, y, dir) {
