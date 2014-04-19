@@ -17,14 +17,14 @@ window.Player = function(id, name) {
     this.id = _.uniqueId(name);
 };
 
-Player.prototype.hash_state() {
+Player.prototype.hash_state = function() {
   return {
     walls: _.cloneDeep(this.walls),
     last_move: this.last_move,
     x: this.x,
     y: this.y
-  }
-}
+  };
+};
 
 Player.prototype.kill = function() {
   this.alive = false;
