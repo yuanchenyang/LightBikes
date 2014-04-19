@@ -75,11 +75,11 @@ run_match = (p1, p2, callback) ->
     p2.score += result[1]
 
     if (result[0] == 0.5)
-      say("results", "Tie!")
+      say("results", "#{p1.name} tied with #{p2.name}")
     else if (result[0] == 1)
       say("results", "#{p1.name} vanquished #{p2.name}")
     else if (result[1] == 1)
-      say("results", "#{p2.name} vanquished #{p1.name}")
+      say("results", "#{p1.name} was vanquished by #{p2.name}")
     else
       say("results", "nobody wins!")
     callback()
@@ -88,10 +88,11 @@ run_match = (p1, p2, callback) ->
 Models.Team.findAll()
 .then((teams) ->
   Q.all(_.map(teams, (team) ->
-    say('init', "#{team.name} -> #{team.repo}")
+    say('init', "#{team.name} -> #{team.gh_uname}/#{team.gh_repo}")
     PARTICIPANTS[team.id] =
       name: team.name
       repo: team.gh_uname + "/" + team.gh_repo
+      url: "https://github.com/#{team.gh_uname}/#{team.gh_repo}"
 
     def = Q.defer()
 
@@ -219,14 +220,14 @@ Models.Team.findAll()
   winners = _.chain(PARTICIPANTS)
              .each((p) -> p.proc.kill('SIGKILL') )
              .sortBy((p) -> -p.score)
-             .map((p) -> [p.name, p.score])
+             .map((p) -> [p.name, p.score, p.url || p.file])
              .value()
   console.log()
   console.log()
 
   console.log("Results:")
   _.each(winners, (w) ->
-    console.log("#{w[0]} won #{w[1]} matches")
+    console.log("#{w[0]} won #{w[1]} matches (#{w[2]})")
   )
 
   process.exit(0)
