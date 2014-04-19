@@ -19,8 +19,20 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
     var me = game_state.me;
     var board = game_state.board;
     var safe_dirs = board.safe_directions(me);
-    var move = _.max(safe_dirs, function(e) {
-        return floodfill(board, board.new_coords_from_dir(me, e));
+    var nums = [];
+    var num_mapping = [];
+
+    for (var i = 0; i < safe_dirs.length; i++) {
+        var e = safe_dirs[i];
+        var n = floodfill(board, board.new_coords_from_dir(me, e));
+        nums.push(n);
+        num_mapping.push([n, e]);
+    }
+    var max_n = _.max(nums);
+
+    var moves = _.filter(num_mapping, function(e) {
+        return e[0] == max_n;
     });
+    var move = _.sample(moves)[1];
     done(move);
 })
