@@ -6,10 +6,18 @@ window.Hex = function(x, y) {
   this.player = null;
 }
 
+Hex.prototype.to_string = function() {
+  return String(this.x) + ", " + String(this.y);
+};
+
 Hex.prototype.draw = function(stage, radius) {
   var thickness = 1;
   if (_.isUndefined(this.hex)) {
     this.hex = new createjs.Shape();
+    this.hex.addEventListener("click", _.throttle(function(evt) {
+      console.log(this.x, this.y);
+    }.bind(this), 1000));
+    this.text = new createjs.Text(this.to_string(), "8px Arial", "black");
   }
   var color = 'white';
   if (this.wall) {
@@ -39,6 +47,10 @@ Hex.prototype.draw = function(stage, radius) {
                    .drawCircle(0, 0, hex_halfheight / 2);
     stage.addChild(this.player.circle);
   }
+  this.text.x = this.hex.x - (0.5 * radius);
+  this.text.y = this.hex.y - (radius * .4);
+  this.textAlign = "center";
+  stage.addChild(this.text);
 }
 
 Hex.prototype.setPlayer = function(p) {
