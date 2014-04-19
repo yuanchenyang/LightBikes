@@ -102,7 +102,7 @@ Game.prototype.move_player = function(player, dir) {
   var hex = this.board.get_hex_at(coord);
   if (_.isNull(hex) || !_.isNull(hex.player)) {
     player.kill();
-    if (!hex.wall) {
+    if (hex && !hex.wall) {
       hex.player.kill();
     }
   } else {
