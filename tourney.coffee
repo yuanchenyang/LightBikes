@@ -55,7 +55,14 @@ run_match = (p1, p2) ->
 
   g = new Game([p1.name, p2.name], true)
   g.run((result) ->
-    say('match complete', JSON.stringify(result))
+    if (result[0] == 0.5)
+      say("results", "Tie!")
+    else if (result[0] == 1)
+      say("results", "#{p1.name} vanquished #{p2.name}")
+    else if (result[1] == 1)
+      say("results", "#{p2.name} vanquished #{p1.name}")
+    else
+      say("results", "nobody wins!")
   )
 
 Models.Team.findAll()
