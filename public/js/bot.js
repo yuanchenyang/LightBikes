@@ -1,4 +1,4 @@
-var Bot = (function() {
+window.Bot = (function() {
   var registrants = {};
 
   return {
@@ -9,4 +9,4 @@ var Bot = (function() {
       return registrants[name];
     }
   };
-});
+})();

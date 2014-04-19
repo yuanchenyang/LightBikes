@@ -1,21 +1,32 @@
-function Game(player_names, simulation) {
-  this.players = _.map(player_names, function(player_name, i) {
-    return new Player(i, player_name);
-  });
-  this.board = new Board(15);
+window.Game = function(player_names, simulation) {
+  this.board = new Board(25, 52);
   this.sim = simulation;
+  this.players = _.map(player_names, function(player_name, i) {
+    var player = new Player(i, player_name);
+    this.board.hexes[player.x][player.y].setPlayer(player);
+    return player;
+  }, this);
+  this.player_states = {};
 
   if (!this.sim) {
     this.stage = new createjs.Stage("main_canvas");
-    setAnimationInterval(100);
+    //setAnimationInterval(100);
     this.render();
   }
-}
+};
+
+Game.prototype.run = function(callback) {
+  console.log("It's not implemented, yo");
+};
 
 Game.prototype.render = function() {
+  var width_radius = (this.stage.canvas.width - 4) / (1.5 * this.board.hexes[0].length);
+  var height_radius = (this.stage.canvas.height - 4) / ((this.board.hexes.length + .5) * Math.sqrt(3));
+  var radius = Math.min(width_radius, height_radius);
+
   _.each(this.board.hexes, function(row) {
     _.each(row, function(hex) {
-      hex.draw(this.stage, 20);
+      hex.draw(this.stage, radius);
     }, this);
   }, this);
   this.stage.update();
@@ -27,7 +38,7 @@ Game.prototype.setAnimationInterval = function(interval) {
     stage.update();
   });
   createjs.Ticker.setInterval(interval);
-}
+};
 
 Game.prototype.placePlayers = function(player_list) {
   for (var i = 0; i < player_list.length; i++) {
@@ -36,7 +47,7 @@ Game.prototype.placePlayers = function(player_list) {
     this.players[i].renderOnGrid();
   }
   stage.update();
-}
+};
 
 /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
  * upper-right direction, 1 is moving to the hex above the current one, and so
@@ -96,27 +107,23 @@ Game.prototype.move_player = function(player, direction) {
   }
 
   if (this.board.hexes[x_new] && this.board.hexes[x_new][y_new]) {
-
     var hex = this.board.hexes[x_new][y_new];
-
-    if (hex.wall) {
-      player.kill();
-      return false;
-    }
-
-    player.walls.push([player.x, player.y]);
-    player.x = x_new;
-    player.y = y_new;
-    return true;
+    hex.player = player;
   }
-
-  return false;
+  if (_.isUndefined(hex) || !_.isNull(hex.player)) {
+    player.kill();
+  }
+  player.walls.push([player.x, player.y]);
+  this.board.hexes[x_cur][y_cur].wall = true;
+  player.x = x_new;
+  player.y = y_new;
+  return true;
 };
 
 Game.prototype.next_turn = function(done) {
-  var done = _.after(this.players.length, done);
+  done = _.after(this.players.length, done);
   _.each(this.players, function(p) {
-    p.get_next_move(this.board.get_copy, this.player_states[p.name], _.once(function(move) {
+    p.get_next_move(this.board.get_copy(), this.player_states[p.name], _.once(function(move) {
       move = Math.floor(move);
       if (move < 0 || move > 5 || move == (last_move + 3) % 6) {
         console.log("Invalid move for player: " + p.name);
@@ -128,4 +135,4 @@ Game.prototype.next_turn = function(done) {
     }));
     _.delay(done, 1000);
   }, this);
-}
+};
