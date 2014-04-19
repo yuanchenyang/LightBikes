@@ -15,11 +15,17 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
         return count;
     };
 
+    var preferred = {
+        "blue"    : [5, 0, 3, 1, 2, 4],
+        "darkred" : [3, 0, 5, 4, 2, 1]
+    };
+
     var me = game_state.me;
     var board = game_state.board;
     var safe_dirs = board.safe_directions(me);
     var nums = [];
     var num_mapping = [];
+
 
     for (var i = 0; i < safe_dirs.length; i++) {
         var e = safe_dirs[i];
@@ -33,12 +39,21 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
         return e[0] == max_n;
     });
 
-    var move = _.min(moves, function(dir) {
-        return game_state.board.get_dist(game_state.board.new_coords_from_dir(me, dir[1]),
-                                         game_state.them);
-    });
+    // var move = _.min(moves, function(dir) {
+    //     return game_state.board.get_dist(game_state.board.new_coords_from_dir(me, dir[1]),
+    //                                      game_state.them);
+    // });
 
     //var move = _.sample(moves)[1];
+
+    var move = _.min(moves, function(dir) {
+        if (dir[1] == 1 || dir[1] == 5) {
+            return -100000;
+        }
+
+        return _.random(0, 10);
+    });
+
     if (typeof move === 'undefined') {
         move = [0, 0];
     }
