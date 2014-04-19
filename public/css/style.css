@@ -48,7 +48,19 @@ header img {
 
 article {
   padding: 20px;
+}
+
+.canvas_container {
   text-align: center;
+}
+
+select {
+  width: 100%;
+}
+
+.not_custom_bot {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 #main_canvas {
