@@ -3,7 +3,7 @@ window.Game = function(player_names, simulation) {
   this.sim = simulation;
   this.players = _.map(player_names, function(player_name, i) {
     var player = new Player(i, player_name);
-    this.board.get_hex_at(player.x, player.y).setPlayer(player);
+    this.board.get_hex_at(player).setPlayer(player);
     if (!this.sim) {
       player.circle = new createjs.Shape();
     }
@@ -96,19 +96,20 @@ Game.prototype.move_player = function(player, dir) {
     console.log("Player " + player.id + " is dead");
     return false;
   }
-  var coord = this.board.new_coords_from_dir(player.x, player.y, dir);
+  var coord = this.board.new_coords_from_dir(player, dir);
   if (_.isNull(coord)) return false;
 
-  var hex = this.board.get_hex_at(coord.x, coord.y);
+  var hex = this.board.get_hex_at(coord);
   if (_.isNull(hex) || !_.isNull(hex.player)) {
     player.kill();
   } else {
     hex.player = player;
   }
   player.walls.push([player.x, player.y]);
-  this.board.get_hex_at(player.x, player.y).wall = true;
+  this.board.get_hex_at(player).wall = true;
   player.x = coord.x;
   player.y = coord.y;
+  player.last_move = dir;
   return true;
 };
 
@@ -124,7 +125,7 @@ Game.prototype.next_turn = function(done) {
 
   _.each(this.players, function(p, i) {
     var moveFn = _.once(function(move) {
-      if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
+      if (typeof move === 'undefined' || move < 0 || move > 5 || (move == (p.last_move + 3) % 6 && this.rounds > 1)) {
         move = p.last_move;
       }
       move = Math.floor(move);

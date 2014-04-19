@@ -15,7 +15,9 @@ window.Board = function(x_size, y_size) {
   }
 };
 
-Board.prototype.get_hex_at = function(x, y) {
+Board.prototype.get_hex_at = function(coord) {
+  var x = coord.x;
+  var y = coord.y;
   if (this.hexes[y] && this.hexes[y][x]) {
     return this.hexes[y][x];
   } else {
@@ -27,7 +29,7 @@ Board.prototype.get_copy = function() {
   var new_board = new Board(this.width, this.height);
   _.each(this.hexes, function(row) {
     _.each(row, function(hex) {
-      var new_hex = new_board.get_hex_at(hex.x, hex.y);
+      var new_hex = new_board.get_hex_at(hex);
       new_hex.player = hex.player;
       new_hex.wall = hex.wall;
     }, this);
@@ -35,7 +37,9 @@ Board.prototype.get_copy = function() {
   return new_board;
 };
 
-Board.prototype.new_coords_from_dir = function(x, y, dir) {
+Board.prototype.new_coords_from_dir = function(coord, dir) {
+  var x = coord.x;
+  var y = coord.y;
   var even_col = x % 2 === 1;
   switch (dir) {
     case 0:
@@ -68,24 +72,24 @@ Board.prototype.new_coords_from_dir = function(x, y, dir) {
   return {x: x_new, y: y_new};
 };
 
-Board.prototype.surrounding_tiles = function(x, y) {
+Board.prototype.surrounding_tiles = function(c) {
   return _.map([0, 1, 2, 3, 4, 5], function(dir) {
-    var coord = this.new_coords_from_dir(x, y, dir);
+    var coord = this.new_coords_from_dir(c, dir);
     return coord;
   }, this);
 };
 
-Board.prototype.safe_surrounding_tiles = function(x, y) {
-  return _.reject(this.surrounding_tiles(x, y), function(coord) {
-    var hex = this.get_hex_at(coord.x, coord.y);
+Board.prototype.safe_surrounding_tiles = function(c) {
+  return _.reject(this.surrounding_tiles(c), function(coord) {
+    var hex = this.get_hex_at(coord);
     return (_.isNull(hex) || !_.isNull(hex.player));
   }, this);
 };
 
-Board.prototype.safe_directions = function(x, y) {
+Board.prototype.safe_directions = function(c) {
   return _.reject([0, 1, 2, 3, 4, 5], function(dir) {
-    var coord = this.new_coords_from_dir(x, y, dir);
-    var hex = this.get_hex_at(coord.x, coord.y);
+    var coord = this.new_coords_from_dir(c, dir);
+    var hex = this.get_hex_at(coord);
     return (_.isNull(hex) || !_.isNull(hex.player));
   }, this);
 };
