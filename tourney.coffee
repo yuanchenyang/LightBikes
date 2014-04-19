@@ -31,6 +31,35 @@ PARTICIPANTS =
 
 MATCHES = []
 
+max_execs = 30
+running_execs = 0
+waiting_execs = []
+
+run_next = (command, props, callback) ->
+  running_execs += 1
+
+  timeout = null
+
+  proc = exec(command, props, ->
+    running_execs -= 1
+    clearTimeout(timeout)
+    if (waiting_execs.length > 0)
+      say("run", "Waiting execs: #{waiting_execs.length}")
+      enqueue_exec.apply(null, waiting_execs.pop())
+    callback.apply(null, arguments)
+  )
+
+  timeout = setTimeout(() ->
+    say('bot', "Killing slow exec #{command}")
+    proc.kill('SIGKILL')
+  , 1000)
+
+enqueue_exec = (command, props, callback) ->
+  if (running_execs < max_execs)
+    run_next(command, props, callback)
+  else
+    waiting_execs.push([command, props, callback])
+
 say = (category, message) ->
   m = category.toUpperCase()
   before = true
@@ -42,9 +71,9 @@ say = (category, message) ->
     before = !before
   console.log("*** #{m} ***: #{message}")
 
-get_cmd = (p, game_state) ->
+get_cmd = (p, game_state, player_state) ->
   "coffee getResponse.coffee --bot '#{p.file}'
-                             --player '#{JSON.stringify(p.state)}'
+                             --player '#{JSON.stringify(player_state)}'
                              --state '#{JSON.stringify(game_state)}'"
 
 run_match = (p1, p2) ->
@@ -55,7 +84,7 @@ run_match = (p1, p2) ->
 
   g = new Game([p1.name, p2.name], true)
   g.run((result) ->
-    console.log(result)
+    say('match complete', JSON.stringify(result))
   )
 
 Models.Team.findAll()
@@ -107,24 +136,22 @@ Models.Team.findAll()
   keys = _.keys(PARTICIPANTS)
 
   _.each(PARTICIPANTS, (p) ->
+    p.strikes = 0
     Bot.register(p.name, (game_state, player_state, move) ->
-      move_cmd = get_cmd(p, game_state)
+      if (p.strikes < 3)
+        move_cmd = get_cmd(p, game_state, player_state)
 
-      timeout = null
-
-      proc = exec(move_cmd, {silent: true}, (code, output) ->
-        if (code != null)
+        enqueue_exec(move_cmd, {silent: true}, (code, output) ->
+          if code == null
+            p.strikes++
+            say('bot', "#{p.name} Strike #{p.strikes}")
           say('bot', "#{p.name} -> #{code}")
           _.extend(player_state, JSON.parse(output || "{}"))
-          clearTimeout(timeout)
           move(code)
-      )
-
-      timeout = setTimeout(() ->
-        say('bot', "Killing slow player #{p.name}")
-        proc.kill('SIGKILL')
+        )
+      else
+        say('bot', "Skipping repeat offender #{p.name}")
         move()
-      , 1000)
     )
   )
 

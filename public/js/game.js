@@ -4,6 +4,7 @@ window.Game = function(player_names, simulation) {
   });
   this.board = new Board(15);
   this.sim = simulation;
+  this.player_states = {};
 
   if (!this.sim) {
     setAnimationInterval(100);
@@ -12,7 +13,28 @@ window.Game = function(player_names, simulation) {
 };
 
 Game.prototype.run = function(callback) {
-  console.log("It's not implemented, yo");
+  _.each(this.players, function(p) {
+    this.player_states[p.name] = {};
+  }, this);
+  this.round(callback);
+};
+
+Game.prototype.winner = function() {
+  living_players = _.reject(this.players, function(p) { return !p.alive; });
+  if (living_players.length == 1) {
+    return living_players[0];
+  } else {
+    return false;
+  }
+};
+
+Game.prototype.round = function(callback) {
+  var wp = this.winner();
+  if (wp) {
+    callback(wp);
+  } else {
+    this.next_turn(this.round.bind(this));
+  }
 };
 
 Game.prototype.setAnimationInterval = function(interval) {
@@ -135,18 +157,29 @@ Game.prototype.move_player = function(player, direction) {
 };
 
 Game.prototype.next_turn = function(done) {
-  done = _.after(this.players.length, done);
+  var needed_players = _.map(this.players, function(p) { return p.name; });
+
+  var d = function(name) {
+    needed_players = _.without(needed_players, name);
+    if (needed_players.length === 0) {
+      done();
+    }
+  };
+
   _.each(this.players, function(p) {
-    p.get_next_move(this.board.get_copy, this.player_states[p.name], _.once(function(move) {
-      move = Math.floor(move);
-      if (move < 0 || move > 5 || move == (last_move + 3) % 6) {
+    p.get_next_move(this.board.get_copy(), this.player_states[p.name], _.once(function(move) {
+      if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
         console.log("Invalid move for player: " + p.name);
         next = p.last_move;
       }
-      p.move(move);
-      p.renderOnGrid();
-      done();
-    }));
-    _.delay(done, 1000);
+      move = Math.floor(move);
+      this.move_player(p, move);
+      //p.renderOnGrid();
+      d(p.name);
+    }.bind(this)));
+
+    // The simulation handles it's own logic for killing
+    if (!this.sim)
+      _.delay(d, 1000, p.name);
   }, this);
 };
