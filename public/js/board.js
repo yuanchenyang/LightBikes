@@ -11,4 +11,8 @@ window.Board = function(x_size, y_size) {
     }
     i++;
   }
-}
+};
+
+Board.prototype.get_copy = function() {
+  return new Board();
+};

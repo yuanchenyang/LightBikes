@@ -1,7 +1,3 @@
 var m = module.exports = {
-  Team: require('./team'),
-  Submission: require('./submission')
+  Team: require('./team')
 };
-
-m.Team.hasMany(m.Submission, {as: "Submissions"});
-m.Submission.belongsTo(m.Team);

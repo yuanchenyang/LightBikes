@@ -1,5 +1,6 @@
 var Team = require('../models/team');
 var _ = require('underscore');
+var request = require('request');
 
 module.exports = {
   register_group: function(app, prefix, tree) {
@@ -23,15 +24,6 @@ module.exports = {
       post: create_team,
       ":id": {
         get: list_team,
-        submissions: {
-          get: list_submissions,
-          ":submission_id": {
-            get: list_submission,
-            "submission.js": {
-              get: get_submission_js
-            }
-          }
-        }
       }
     }
   }
@@ -49,33 +41,61 @@ function list_team(req, res) {
   });
 }
 
+var ghre = /^([A-Za-z0-9-]+)\/([A-Za-z0-9-]+)$/;
 function create_team(req, res) {
-  res.json(req.params);
-}
+  var p = req.body;
+  if (ghre.test(p.github)) {
+    mat = p.github.match(ghre);
 
-function list_submissions(req, res) {
-  Team.find(req.params.id).success(function(team) {
-    team.getSubmissions().success(function(submissions) {
-      res.json(submissions);
-    });
-  });
-}
+    url = "https://api.github.com/users/" + mat[1];
+    headers = {
+      'User-Agent': 'Cisco-Meraki-CFG/LightBikes'
+    };
 
-function list_submission(req, res) {
-  Team.find(req.params.id).success(function(team) {
-    team.getSubmissions({where: ["id = ?", req.params.submission_id]}).success(function(submissions) {
-      res.json(submissions[0]);
-    });
-  });
-}
+    console.log(url);
+    request({
+      url: url,
+      headers: headers
+    }, function(error, response, body) {
+      resp = JSON.parse(body);
 
-function get_submission_js(req, res) {
-  Team.find(req.params.id).success(function(team) {
-    team.getSubmissions({where: ["id = ?", req.params.submission_id]}).success(function(submissions) {
-      res.set({
-        "Content-Type": "application/javascript"
-      });
-      res.send(submissions[0].source);
+      if (resp.message === "Not Found") {
+        res.json({
+          error: "not a real github user",
+          original_error: resp
+        });
+      } else {
+        url = "https://api.github.com/repos/" + mat[1] + "/" + mat[2];
+        request({
+          url: url,
+          headers: headers
+        }, function(error, response, body) {
+          resp = JSON.parse(body);
+          if (resp.message === 'Not Found') {
+            res.json({
+              error: "not a real github repo",
+              original_error: resp
+            });
+          } else {
+            Team.create({
+              name: p.group_name,
+              gh_uname: mat[1],
+              gh_repo: mat[2]
+            }).success(function(team) {
+              res.json(team);
+            }).error(function(error) {
+              res.json({
+                error: "Group Name or Github Username already in use",
+                orig: error
+              });
+            });
+          }
+        });
+      }
     });
-  });
+  } else {
+    res.json({
+      error: "bad github"
+    });
+  }
 }

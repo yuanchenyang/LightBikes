@@ -26,6 +26,7 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/bots', express.static(path.join(__dirname, 'example-bots')));
 
 // development only
 if ('development' == app.get('env')) {
