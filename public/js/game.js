@@ -105,7 +105,7 @@ Game.prototype.move_player = function(player, direction) {
   var x_new;
   var y_new;
 
-  var even_col = x_cur % 2 === 0;
+  var even_col = x_cur % 2 === 1;
 
   switch (direction) {
     case 0:
@@ -125,7 +125,7 @@ Game.prototype.move_player = function(player, direction) {
 
     case 3:
       x_new = x_cur - 1;
-      y_new = even_col ? y_cur: y_cur + 1;
+      y_new = even_col ? y_cur : y_cur + 1;
       break;
 
     case 4:
@@ -135,7 +135,7 @@ Game.prototype.move_player = function(player, direction) {
 
     case 5:
       x_new = x_cur + 1;
-      y_new = even_col ? y_cur : y_cur + 1;
+      y_new = even_col ? y_cur + 1 : y_cur;
       break;
 
     default:
