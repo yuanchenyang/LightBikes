@@ -154,10 +154,10 @@ Game.prototype.move_player = function(player, direction) {
 };
 
 Game.prototype.next_turn = function(done) {
-  var needed_players = _.map(this.players, function(p) { return p.name; });
+  var needed_players = _.map(this.players, function(p) { return p.id; });
 
-  var d = function(name) {
-    needed_players = _.without(needed_players, name);
+  var d = function(id) {
+    needed_players = _.without(needed_players, id);
     if (needed_players.length === 0) {
       done();
     }
@@ -170,7 +170,7 @@ Game.prototype.next_turn = function(done) {
       }
       move = Math.floor(move);
       this.move_player(p, move);
-      d(p.name);
+      d(p.id);
     }.bind(this)));
 
     // The simulation handles it's own logic for killing
