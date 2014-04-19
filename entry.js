@@ -39,5 +39,9 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
     });
 
     //var move = _.sample(moves)[1];
+    if (typeof move === 'undefined') {
+        move = [0, 0];
+    }
+
     done(move[1]);
 })
