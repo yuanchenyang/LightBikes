@@ -41,7 +41,7 @@ function list_team(req, res) {
   });
 }
 
-var ghre = /^([A-Za-z0-9-]+)\/([A-Za-z0-9-]+)$/;
+var ghre = /^([A-Za-z0-9-_]+)\/([A-Za-z0-9-_]+)$/;
 function create_team(req, res) {
   var p = req.body;
   if (ghre.test(p.github)) {
