@@ -3,7 +3,6 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
         var queue = [curr_pos];
         var count = 0;
         board = board.get_copy();
-        console.log(curr_pos);
         while (queue.length > 0) {
             var curr = queue.pop();
             board.hexes[curr.y][curr.x].player = true;
@@ -33,6 +32,12 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
     var moves = _.filter(num_mapping, function(e) {
         return e[0] == max_n;
     });
-    var move = _.sample(moves)[1];
-    done(move);
+
+    var move = _.min(moves, function(dir) {
+        return game_state.board.get_dist(game_state.board.new_coords_from_dir(me, dir[1]),
+                                         game_state.them);
+    });
+
+    //var move = _.sample(moves)[1];
+    done(move[1]);
 })
