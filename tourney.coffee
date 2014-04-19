@@ -39,6 +39,12 @@ PARTICIPANTS =
   "-6":
     name: "SpiralBot",
     file: "./example-bots/spiral-bot.js"
+  "-7":
+    name: "FollowBot",
+    file: "./example-bots/follow-bot.js"
+  "-8":
+    name: "FleeBot",
+    file: "./example-bots/flee-bot.js"
 
 MATCHES = []
 
