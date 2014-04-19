@@ -24,6 +24,10 @@ sandbox =
     register: (_name, _fun) ->
       name = _name
       fun = _fun
+    getBot: (_name) ->
+      ->
+    getAllBots: () ->
+      []
   mathjs: require('mathjs')
   _: require('lodash-node')
   $: require('jquery')
