@@ -1,5 +1,5 @@
 window.Game = function(player_names, simulation) {
-  this.board = new Board(52, 25);
+  this.board = new Board(30, 15);
   this.sim = simulation;
   this.players = _.map(player_names, function(player_name, i) {
     var player = new Player(i, player_name);
