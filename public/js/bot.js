@@ -7,6 +7,9 @@ window.Bot = (function() {
     },
     getBot: function(name) {
       return registrants[name];
+    },
+    getAllBots: function() {
+      return _.keys(registrants);
     }
   };
 })();

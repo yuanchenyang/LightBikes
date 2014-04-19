@@ -1,21 +1,23 @@
 window.Game = function(player_names, simulation) {
-  this.players = _.map(player_names, function(player_name, i) {
-    return new Player(i, player_name);
-  });
-  this.board = new Board(15);
+  this.board = new Board(25, 52);
   this.sim = simulation;
+  this.players = _.map(player_names, function(player_name, i) {
+    var player = new Player(i, player_name);
+    this.board.hexes[player.x][player.y].setPlayer(player);
+    return player;
+  }, this);
   this.player_states = {};
+  _.each(this.players, function(p) {
+    this.player_states[p.name] = {};
+  }, this);
 
   if (!this.sim) {
-    setAnimationInterval(100);
-    drawGrid(15);
+    this.stage = new createjs.Stage("main_canvas");
+    this.setAnimationInterval(100);
   }
 };
 
 Game.prototype.run = function(callback) {
-  _.each(this.players, function(p) {
-    this.player_states[p.name] = {};
-  }, this);
   this.rounds = 0;
   this.round(callback);
 };
@@ -41,43 +43,34 @@ Game.prototype.round = function(callback) {
     });
   } else {
     this.rounds++;
-    this.next_turn(this.round.bind(this, callback));
+    if (!this.sim) {
+      _.delay(function() {
+        this.next_turn(this.round.bind(this, callback))
+      }.bind(this), 500);
+    } else {
+      this.next_turn(this.round.bind(this, callback));
+    }
   }
 };
+
+Game.prototype.render = function() {
+  var width_radius = (this.stage.canvas.width - 4) / (1.5 * this.board.hexes[0].length);
+  var height_radius = (this.stage.canvas.height - 4) / ((this.board.hexes.length + .5) * Math.sqrt(3));
+  var radius = Math.min(width_radius, height_radius);
+
+  _.each(this.board.hexes, function(row) {
+    _.each(row, function(hex) {
+      hex.draw(this.stage, radius);
+    }, this);
+  }, this);
+  this.stage.update();
+}
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {
-    //console.log("Tick");
-    stage.update();
-  });
+    this.render();
+  }.bind(this));
   createjs.Ticker.setInterval(interval);
-};
-
-/* radius passed in is the radius of the hex polygon */
-Game.prototype.drawGrid = function(radius) {
-  var id = 0;
-  var side_offset = 2;
-  var x = side_offset;
-  var h_rad = 0.5*radius;
-  var hex_halfheight = Math.sqrt(radius*radius - h_rad*h_rad);
-
-  while (x < (stage.canvas.width - 2*radius)) {
-    var y = side_offset;
-    var idx = this.board.hexes.push([]) - 1;
-
-    if (idx % 2 !== 0) {
-      y += hex_halfheight;
-    }
-
-    while (y < (stage.canvas.height - 2*radius)) {
-      var hex = new Hex(x + radius, y + radius, radius, 1);
-      hex.id = id;
-      id++;
-      this.board.hexes[idx].push(hex);
-      y += 2 * hex_halfheight;
-    }
-    x += 1.5*radius;
-  }
 };
 
 Game.prototype.placePlayers = function(player_list) {
@@ -146,21 +139,17 @@ Game.prototype.move_player = function(player, direction) {
   }
 
   if (this.board.hexes[x_new] && this.board.hexes[x_new][y_new]) {
-
     var hex = this.board.hexes[x_new][y_new];
-
-    if (hex.wall) {
-      player.kill();
-      return false;
-    }
-
-    player.walls.push([player.x, player.y]);
-    player.x = x_new;
-    player.y = y_new;
-    return true;
+    hex.player = player;
   }
-
-  return false;
+  if (_.isUndefined(hex) || !_.isNull(hex.player)) {
+    player.kill();
+  }
+  player.walls.push([player.x, player.y]);
+  this.board.hexes[x_cur][y_cur].wall = true;
+  player.x = x_new;
+  player.y = y_new;
+  return true;
 };
 
 Game.prototype.next_turn = function(done) {
@@ -180,7 +169,6 @@ Game.prototype.next_turn = function(done) {
       }
       move = Math.floor(move);
       this.move_player(p, move);
-      //p.renderOnGrid();
       d(p.name);
     }.bind(this)));
 

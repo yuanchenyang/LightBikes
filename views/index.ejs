@@ -1,9 +1,16 @@
 <% layout('layout') %>
 <% script('/vendor/js/easeljs.min.js') %>
+<% script('/js/main.js') %>
 <% script('/js/game.js') %>
+<% script('/js/board.js') %>
+<% script('/js/hex.js') %>
+<% script('/js/player.js') %>
+<% script('/js/bot.js') %>
+<% script('/bots/dumb-bot.js') %>
+<% script('/bots/circle-bot.js') %>
 
 <h1><%= title %></h1>
 
-<canvas id="main_canvas" width=900 height=500 style="border: 1px solid black">
+<canvas id="main_canvas" width=900 height=500>
   Your browser must support Canvas!
 </canvas>
