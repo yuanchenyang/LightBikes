@@ -3,7 +3,9 @@ window.Bot = (function() {
 
   return {
     register: function(name, callback) {
-      registrants[name] = callback;
+      if (_.isUndefined(registrants[name])) {
+        registrants[name] = callback;
+      }
     },
     getBot: function(name) {
       return registrants[name];
