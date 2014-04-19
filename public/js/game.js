@@ -7,18 +7,17 @@ window.Game = function(player_names, simulation) {
     return player;
   }, this);
   this.player_states = {};
+  _.each(this.players, function(p) {
+    this.player_states[p.name] = {};
+  }, this);
 
   if (!this.sim) {
     this.stage = new createjs.Stage("main_canvas");
-    //setAnimationInterval(100);
-    this.render();
+    this.setAnimationInterval(100);
   }
 };
 
 Game.prototype.run = function(callback) {
-  _.each(this.players, function(p) {
-    this.player_states[p.name] = {};
-  }, this);
   this.rounds = 0;
   this.round(callback);
 };
@@ -44,7 +43,13 @@ Game.prototype.round = function(callback) {
     });
   } else {
     this.rounds++;
-    this.next_turn(this.round.bind(this, callback));
+    if (!this.sim) {
+      _.delay(function() {
+        this.next_turn(this.round.bind(this, callback))
+      }.bind(this), 500);
+    } else {
+      this.next_turn(this.round.bind(this, callback));
+    }
   }
 };
 
@@ -63,9 +68,8 @@ Game.prototype.render = function() {
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {
-    //console.log("Tick");
-    stage.update();
-  });
+    this.stage.update();
+  }.bind(this));
   createjs.Ticker.setInterval(interval);
 };
 
@@ -167,7 +171,6 @@ Game.prototype.next_turn = function(done) {
       }
       move = Math.floor(move);
       this.move_player(p, move);
-      //p.renderOnGrid();
       d(p.name);
     }.bind(this)));
 
