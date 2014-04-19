@@ -92,7 +92,6 @@ Game.prototype.placePlayers = function(player_list) {
  */
 Game.prototype.move_player = function(player, direction) {
   if (!player.alive) {
-    console.log("Player " + player.name + " is dead");
     return false;
   }
 
@@ -165,7 +164,6 @@ Game.prototype.next_turn = function(done) {
   _.each(this.players, function(p) {
     p.get_next_move(this.board.get_copy(), this.player_states[p.name], _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
-        console.log("Invalid move for player: " + p.name);
         next = p.last_move;
       }
       move = Math.floor(move);

@@ -11,6 +11,7 @@ require('./public/js/game')
 Http    = require('http')
 Q       = require('Q')
 fs      = require('fs')
+net     = require('net')
 
 db      = require('./db')
 Models  = require('./Models')
@@ -31,35 +32,6 @@ PARTICIPANTS =
 
 MATCHES = []
 
-max_execs = 100
-running_execs = 0
-waiting_execs = []
-
-run_next = (command, props, callback) ->
-  running_execs += 1
-
-  timeout = null
-
-  proc = exec(command, props, ->
-    running_execs -= 1
-    clearTimeout(timeout)
-    if (waiting_execs.length > 0)
-      say("run", "Waiting execs: #{waiting_execs.length}")
-      enqueue_exec.apply(null, waiting_execs.pop())
-    callback.apply(null, arguments)
-  )
-
-  timeout = setTimeout(() ->
-    say('bot', "Killing slow exec #{command}")
-    proc.kill('SIGKILL')
-  , 10000)
-
-enqueue_exec = (command, props, callback) ->
-  if (running_execs < max_execs)
-    run_next(command, props, callback)
-  else
-    waiting_execs.push([command, props, callback])
-
 say = (category, message) ->
   m = category.toUpperCase()
   before = true
@@ -72,9 +44,7 @@ say = (category, message) ->
   console.log("*** #{m} ***: #{message}")
 
 get_cmd = (p, game_state, player_state) ->
-  "coffee getResponse.coffee --bot '#{p.file}'
-                             --player '#{JSON.stringify(player_state)}'
-                             --state '#{JSON.stringify(game_state)}'"
+  "coffee botResponder.coffee --bot '#{p.file}'"
 
 run_match = (p1, p2) ->
   p1.state = {}
@@ -101,7 +71,6 @@ Models.Team.findAll()
     fname = "./user-bots/#{team.name}.js"
     Http.get(url, (res) ->
       if (res.statusCode == 200)
-        console.log(res.statusCode)
         res.setEncoding('utf8')
         data = ""
         res.on("data", (chunk) ->
@@ -137,20 +106,41 @@ Models.Team.findAll()
 
   _.each(PARTICIPANTS, (p) ->
     p.strikes = 0
+
+    cmd = get_cmd(p)
+    proc = exec(cmd, {silent: true, async: true})
+
     Bot.register(p.name, (game_state, player_state, move) ->
       if (p.strikes < 3)
-        move_cmd = get_cmd(p, game_state, player_state)
+        buf = ""
 
-        enqueue_exec(move_cmd, {silent: true}, (code, output) ->
-          if code == null
-            p.strikes++
-            say('bot', "#{p.name} Strike #{p.strikes}")
-          say('bot', "#{p.name} -> #{code}")
-          _.extend(player_state, JSON.parse(output || "{}"))
-          move(code)
+        timeout = null
+
+        c = net.createConnection("/tmp/LightBikeBot-#{p.name}")
+
+        c.on('connect', () ->
+          c.write(JSON.stringify(game_state) + "\n")
+          c.write(JSON.stringify(player_state) + "\n")
         )
+
+        c.on('data', (d) ->
+          buf += d
+        )
+
+        c.on('end', (d) ->
+          parts = buf.split("\n")
+          _.extend(player_state, JSON.parse(parts[0] || {}))
+          move(JSON.parse(parts[1]).move)
+          clearTimeout(timeout)
+        )
+
+        timeout = setTimeout(() ->
+          c.end()
+          p.strikes += 1
+          move()
+        , 1000)
+
       else
-        say('bot', "Skipping repeat offender #{p.name}")
         move()
     )
   )
@@ -163,11 +153,15 @@ Models.Team.findAll()
   ), true)
   say('play', "Matches #{MATCHES.length}")
 
-  say('play', "Starting all matches")
-  _.each(MATCHES, (match) ->
-    p1 = PARTICIPANTS[match[0]]
-    p2 = PARTICIPANTS[match[1]]
+  say('play', "Waiting for processes to settle")
 
-    run_match(p1, p2)
-  )
+  setTimeout(() ->
+    say('play', "Starting all matches")
+    _.each(MATCHES, (match) ->
+      p1 = PARTICIPANTS[match[0]]
+      p2 = PARTICIPANTS[match[1]]
+
+      run_match(p1, p2)
+    )
+  , 1000)
 )
