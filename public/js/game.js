@@ -97,7 +97,10 @@ Game.prototype.move_player = function(player, dir) {
       if (!hex.wall && hex.player.has_moved) {
         hex.player.kill();
       }
-      hex.crash_site = true;
+    }
+    oldhex = this.board.get_hex_at(player);
+    if (oldhex) {
+      oldhex.crash_site = true;
     }
   } else {
     hex.player = player;
