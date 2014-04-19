@@ -1,15 +1,24 @@
-function Game(player_names, simulation)
+function Game(player_names, simulation) {
   this.players = _.map(player_names, function(player_name, i) {
     return new Player(i, player_name);
-  };
+  });
   this.board = new Board(15);
   this.sim = simulation;
 
   if (!this.sim) {
-    this.stage;
+    this.stage = new createjs.Stage("main_canvas");
     setAnimationInterval(100);
-    drawGrid(15);
+    this.render();
   }
+}
+
+Game.prototype.render = function() {
+  _.each(this.board.hexes, function(row) {
+    _.each(row, function(hex) {
+      hex.draw(this.stage, 20);
+    }, this);
+  }, this);
+  this.stage.update();
 }
 
 Game.prototype.setAnimationInterval = function(interval) {
@@ -18,33 +27,6 @@ Game.prototype.setAnimationInterval = function(interval) {
     stage.update();
   });
   createjs.Ticker.setInterval(interval);
-}
-
-  /* radius passed in is the radius of the hex polygon */
-Game.prototype.drawGrid function(radius) {
-  var id = 0;
-  var side_offset = 2;
-  var x = side_offset;
-  var h_rad = 0.5*radius;
-  var hex_halfheight = Math.sqrt(radius*radius - h_rad*h_rad);
-
-  while (x < (stage.canvas.width - 2*radius)) {
-    var y = side_offset;
-    var idx = this.board.hexes.push([]) - 1;
-
-    if (idx % 2 !== 0) {
-      y += hex_halfheight;
-    }
-
-    while (y < (stage.canvas.height - 2*radius)) {
-      var hex = new Hex(x + radius, y + radius, radius, 1);
-      hex.id = id;
-      id++;
-      this.board.hexes[idx].push(hex);
-      y += 2 * hex_halfheight;
-    }
-    x += 1.5*radius;
-  }
 }
 
 Game.prototype.placePlayers = function(player_list) {

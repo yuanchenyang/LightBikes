@@ -1,19 +1,26 @@
-function Hex(x, y, radius, thickness) {
+function Hex(x, y) {
+  this.x = x;
+  this.y = y;
+  this.wall = false;
+  this.wall_owner = null;
+  this.player = null;
+}
 
-    var hex = new createjs.Shape();
-    hex.graphics
-        .setStrokeStyle(thickness)
-        .beginStroke("#000")
-        .drawPolyStar(0, 0, radius, 6, 0, 0);
-    hex.x = x;
-    hex.y = y;
-    stage.addChild(hex);
+Hex.prototype.draw = function(stage, radius) {
+  var thickness = 1;
+  this.hex = new createjs.Shape();
+  this.hex.graphics
+      .setStrokeStyle(thickness)
+      .beginStroke("#000")
+      .drawPolyStar(0, 0, radius, 6, 0, 0);
 
-    this._hex = hex;
-    this.radius = radius;
-    this.thickness = thickness;
-
-    this.wall = false;
+  var side_offset = 2;
+  var x = side_offset;
+  var h_rad = 0.5*radius;
+  var hex_halfheight = Math.sqrt(radius*radius - h_rad*h_rad);
+  this.hex.x = this.x * radius * 1.5;
+  this.hex.y = (this.y % 2 == 1 ? hex_halfheight : 0) + (radius * this.y);
+  stage.addChild(this.hex);
 }
 
 Hex.prototype.setWall = function(color) {
@@ -21,7 +28,7 @@ Hex.prototype.setWall = function(color) {
         return;
     }
     var r = this.radius;
-    this._hex.graphics.clear()
+    this.hex.graphics.clear()
        .beginFill(color)
        .drawPolyStar(0, 0, r, 6, 0, 0);
 
