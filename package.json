@@ -11,7 +11,6 @@
     "jade": "*",
     "ejs": "^1.0.0",
     "ejs-locals": "^1.0.2",
-    "underscore": "^1.6.0",
     "nodemon": "^1.0.17",
     "sqlite3": "^2.2.3",
     "sequelize": "^1.7.2",
@@ -21,7 +20,8 @@
     "mathjs": "^0.20.0",
     "jquery": "^2.1.0",
     "shelljs": "^0.2.6",
-    "request": "^2.34.0"
+    "request": "^2.34.0",
+    "lodash-node": "^2.4.1"
   },
   "devDependencies": {
     "grunt": "^0.4.4",

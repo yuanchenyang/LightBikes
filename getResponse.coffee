@@ -19,7 +19,7 @@ sandbox =
       name = _name
       fun = _fun
   mathjs: require('mathjs')
-  _: require('underscore')
+  _: require('lodash-node')
   $: require('jquery')
   console:
     log: ->

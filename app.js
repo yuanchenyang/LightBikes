@@ -8,7 +8,7 @@ var express = require('express');
 var routes = require('./routes');
 var http = require('http');
 var path = require('path');
-var _ = require('underscore');
+var _ = require('lodash-node');
 
 var ejs = require('ejs-locals');
 

@@ -1,5 +1,5 @@
 var Team = require('../models/team');
-var _ = require('underscore');
+var _ = require('lodash-node');
 var request = require('request');
 
 module.exports = {
