@@ -1,4 +1,5 @@
 $(document).ready(function() {
+  var store = new LocalStorageManager();
   win1 = CodeMirror.fromTextArea(document.getElementById("bot1_code"), {
     lineNumbers: true,
     mode: "text/javascript"
@@ -15,19 +16,36 @@ $(document).ready(function() {
     "  // Bot code, then call move!",
     "})"
   ].join("\n");
+  var c1, c2, code;
+  code = dummy_code;
+  if (c1 = store.get('c1')) {
+    code = c1;
+  }
+  win1.setValue(code);
 
-  win1.setValue(dummy_code);
-  win2.setValue(dummy_code);
+  code = dummy_code;
+  if (c2 = store.get('c2')) {
+    code = c2;
+  }
+  win2.setValue(code);
 
+  win1.on('change', _.debounce(function(editor, event) {
+    store.set('c1', editor.getValue());
+  }, 1000));
+  win2.on('change', _.debounce(function(editor, event) {
+    store.set('c2', editor.getValue());
+  }, 1000));
   b1s.change(function(event) {
     var el = $(win1.getWrapperElement());
     var category = event.target.value;
     el.toggle(category === 'custom');
+    store.set('d1', category);
   });
   b2s.change(function(event) {
     var el = $(win2.getWrapperElement());
     var category = event.target.value;
     el.toggle(category === 'custom');
+    store.set('d2', category);
   });
   var option;
   _.each(['custom'].concat(Bot.getAllBots()), function(bot) {
@@ -36,8 +54,16 @@ $(document).ready(function() {
     option.innerHTML = bot;
     b1s.append($(option).clone());
     b2s.append(option);
-    b1s.val('CircleBot').change();
-    b2s.val('DumbBot').change();
+    var d1 = 'CircleBot';
+    var d2 = 'DumbBot';
+    if (store.get('d1')) {
+      d1 = store.get('d1');
+    }
+    if (store.get('d2')) {
+      d2 = store.get('d2');
+    }
+    b1s.val(d1).change();
+    b2s.val(d2).change();
   });
 
   var subm = $('#start_game_btn');
