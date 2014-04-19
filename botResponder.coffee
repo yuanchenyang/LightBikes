@@ -1,5 +1,12 @@
 require("shelljs/global")
+
+global.window = global
+global._ = require('underscore')
+
 program = require("commander")
+
+require('./public/js/board')
+require('./public/js/player')
 
 json = (val) ->
   JSON.parse(val)
@@ -33,8 +40,11 @@ vm.runInNewContext(fs.readFileSync(program.bot).toString(), sandbox)
 sock = null
 
 # Bot is loaded!
-request = (sock, board_state, player_state) ->
-  fun(board_state, player_state, (move) ->
+request = (sock, game_state, player_state) ->
+  _.extend(game_state.board, Board.prototype)
+  _.extend(game_state.me, Player.prototype)
+  _.extend(game_state.them, Player.prototype)
+  fun(game_state, player_state, (move) ->
     sock.write(JSON.stringify(player_state) + "\n")
     sock.write(JSON.stringify({move: move}) + "\n")
     sock.end()
