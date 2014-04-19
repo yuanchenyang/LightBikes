@@ -15,17 +15,40 @@ window.Player = function(id, name) {
     this.last_move = initial_directions[id];
     this.get_next_move = Bot.getBot(name);
     this.id = _.uniqueId(name);
+
+    this.kill = function() {
+      this.alive = false;
+    };
+
+    this.hash_state = function() {
+      return _.extend({
+        walls: _.cloneDeep(this.walls),
+        last_move: this.last_move,
+        x: this.x,
+        y: this.y
+      }, Player.prototype);
+    };
 };
 
-Player.prototype.hash_state = function() {
-  return {
-    walls: _.cloneDeep(this.walls),
-    last_move: this.last_move,
-    x: this.x,
-    y: this.y
-  };
+Player.prototype = {
+  straight: function() {
+    return this.last_move;
+  },
+
+  left: function() {
+    return (this.last_move + 1) % 6;
+  },
+
+  sharp_left: function() {
+    return (this.last_move + 2) % 6;
+  },
+
+  right: function() {
+    return (this.last_move + 5) % 6;
+  },
+
+  sharp_right: function() {
+    return (this.last_move + 4) % 6;
+  },
 };
 
-Player.prototype.kill = function() {
-  this.alive = false;
-};

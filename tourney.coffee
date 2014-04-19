@@ -30,6 +30,21 @@ PARTICIPANTS =
   "-3":
     name: "SlowBot",
     file: "./example-bots/slow-bot.js"
+  "-4":
+    name: "LessDumbBot",
+    file: "./example-bots/less-dumb-bot.js"
+  "-5":
+    name: "AvoidBot",
+    file: "./example-bots/avoid-bot.js"
+  "-6":
+    name: "SpiralBot",
+    file: "./example-bots/spiral-bot.js"
+  "-7":
+    name: "FollowBot",
+    file: "./example-bots/follow-bot.js"
+  "-8":
+    name: "FleeBot",
+    file: "./example-bots/flee-bot.js"
 
 MATCHES = []
 
@@ -121,7 +136,7 @@ Models.Team.findAll()
     p.score = 0
 
     cmd = get_cmd(p)
-    p.proc = exec(cmd, {silent: true, async: true})
+    p.proc = exec(cmd + " 2>&1", {async: true})
 
     Bot.register(p.name, (game_state, player_state, move) ->
       if (p.strikes < 3)
@@ -142,9 +157,15 @@ Models.Team.findAll()
 
         c.on('end', (d) ->
           parts = buf.split("\n")
-          _.extend(player_state, JSON.parse(parts[0] || {}))
-          move(JSON.parse(parts[1]).move)
+          _.extend(player_state, JSON.parse(parts[0] || "{}"))
+          move(JSON.parse(parts[1] || "{}").move)
           clearTimeout(timeout)
+        )
+
+        c.on('error', (e) ->
+          console.log(error)
+          clearTimeout(timeout)
+          move()
         )
 
         timeout = setTimeout(() ->
@@ -164,13 +185,13 @@ Models.Team.findAll()
       [key1, key2]
     )
   ), true)
-  say('play', "Matches #{MATCHES.length}")
+  say('play', "Matches #{MATCHES.length * 2}")
 
   say('play', "Waiting for processes to settle")
 
   def = Q.defer()
 
-  d = _.after(MATCHES.length, () ->
+  d = _.after(MATCHES.length * 2, () ->
     def.resolve()
   )
 
@@ -182,7 +203,14 @@ Models.Team.findAll()
 
       run_match(p1, p2, d)
     )
-  , 1000)
+
+    _.each(MATCHES, (match) ->
+      p1 = PARTICIPANTS[match[1]]
+      p2 = PARTICIPANTS[match[0]]
+
+      run_match(p1, p2, d)
+    )
+  , 10000)
 
   def.promise
 ).then(() ->
