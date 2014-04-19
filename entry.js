@@ -4,13 +4,10 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
         var count = 0;
         board = board.get_copy();
         console.log(curr_pos);
-        while (queue != []) {
+        while (queue.length > 0) {
             var curr = queue.pop();
-            console.log(curr);
             board.hexes[curr.y][curr.x].player = true;
             var safe = board.safe_surrounding_tiles(curr);
-            //console.log(safe);
-            //console.log(curr);
             for (var i = 0; i < safe.length; i++) {
                 queue.push(safe[i]);
                 count++;
