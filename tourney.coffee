@@ -10,6 +10,7 @@ require('./public/js/board')
 require('./public/js/game')
 
 Http    = require('http')
+Https   = require('https')
 Q       = require('Q')
 fs      = require('fs')
 net     = require('net')
@@ -90,13 +91,15 @@ Models.Team.findAll()
     say('init', "#{team.name} -> #{team.repo}")
     PARTICIPANTS[team.id] =
       name: team.name
-      repo: team.repo
+      repo: team.gh_uname + "/" + team.gh_repo
 
     def = Q.defer()
 
-    url = "http://raw.githubusercontent.com/#{team.repo}/master/entry.js"
+    url = "https://rawgit.com/#{team.gh_uname}/#{team.gh_repo}/master/entry.js"
+    console.log(url)
     fname = "./user-bots/#{team.name}.js"
-    Http.get(url, (res) ->
+    Https.get(url, (res) ->
+      console.log(res.statusCode)
       if (res.statusCode == 200)
         res.setEncoding('utf8')
         data = ""
@@ -163,7 +166,6 @@ Models.Team.findAll()
         )
 
         c.on('error', (e) ->
-          console.log(error)
           clearTimeout(timeout)
           move()
         )

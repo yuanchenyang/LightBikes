@@ -93,7 +93,15 @@ $(document).ready(function() {
       botNames = [a, b];
       var game = new Game(botNames, false);
       game.run(function(result) {
-        console.log(result);
+        _.delay(function() {
+          if (result[0] == 0.5) {
+            alert("Tie");
+          } else if (result[0] == 1) {
+            alert("Red Wins");
+          } else {
+            alert("Blue Wins");
+          }
+        }, 500);
       });
     }
   });
