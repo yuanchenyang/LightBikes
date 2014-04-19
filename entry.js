@@ -44,15 +44,14 @@ Bot.register("cy-bot", function(game_state, my_state, done) {
     //                                      game_state.them);
     // });
 
-    //var move = _.sample(moves)[1];
+    var move = _.sample(moves)[1];
 
-    var move = _.min(moves, function(dir) {
-        if (dir[1] == 1 || dir[1] == 5) {
-            return -100000;
-        }
-
-        return _.random(0, 10);
-    });
+    //var move = _.min(moves, function(dir) {
+    //    if (dir[1] == 1 || dir[1] == 5) {
+    //        return -100000;
+    //    }
+    //    return _.random(0, 10);
+    //});
 
     if (typeof move === 'undefined') {
         move = [0, 0];
