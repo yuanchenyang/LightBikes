@@ -14,8 +14,6 @@ window.Player = function(id, name) {
     this.wall_color = wall_colors[id];
     this.last_move = initial_directions[id];
     this.get_next_move = Bot.getBot(name);
-
-    this.circle = new createjs.Shape();
 }
 
 Player.prototype.kill = function() {
