@@ -3,12 +3,16 @@ window.Bot = (function() {
 
   return {
     register: function(name, callback) {
-      if (_.isUndefined(registrants[name])) {
-        registrants[name] = callback;
+      if ((name in registrants)) {
+        name = _.uniqueId(name);
       }
+
+      registrants[name] = callback;
+
+      return name;
     },
     getBot: function(name) {
-      return registrants[name];
+      return registrants[name].bind({});
     },
     getAllBots: function() {
       return _.keys(registrants);

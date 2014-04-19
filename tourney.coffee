@@ -1,7 +1,7 @@
 require('shelljs/global')
 
 global.window = global
-global._ = require('underscore')
+global._ = require('lodash-node')
 
 require('./public/js/hex')
 require('./public/js/player')
