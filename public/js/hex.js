@@ -2,6 +2,7 @@ window.Hex = function(x, y) {
   this.x = x;
   this.y = y;
   this.wall = false;
+  this.crash_site = false;
   this.player = null;
 }
 
@@ -13,6 +14,9 @@ Hex.prototype.draw = function(stage, radius) {
   var color = 'white';
   if (this.wall) {
     color = this.player.wall_color;
+  }
+  if (this.crash_site) {
+    color = "orange";
   }
   this.hex.graphics
       .clear()
@@ -28,7 +32,7 @@ Hex.prototype.draw = function(stage, radius) {
   this.hex.y = padding + hex_halfheight + (2*hex_halfheight * this.y) + (this.x % 2 == 0 ? hex_halfheight : 0);
   stage.addChild(this.hex);
 
-  if (this.player && !this.wall) {
+  if (this.player && !this.wall && !this.crash_site) {
     this.player.circle.x = this.hex.x;    
     this.player.circle.y = this.hex.y;    
     this.player.circle.graphics.beginFill(this.player.color)

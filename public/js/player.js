@@ -25,7 +25,8 @@ window.Player = function(id, name) {
         walls: _.cloneDeep(this.walls),
         last_move: this.last_move,
         x: this.x,
-        y: this.y
+        y: this.y,
+        color: this.color
       }, Player.prototype);
     };
 };

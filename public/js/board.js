@@ -30,7 +30,15 @@ Board.prototype.get_copy = function() {
   _.each(this.hexes, function(row) {
     _.each(row, function(hex) {
       var new_hex = new_board.get_hex_at(hex);
-      new_hex.player = hex.player;
+      if (!_.isNull(hex.player)) {
+        new_hex.player = {
+          x: hex.player.x,
+          y: hex.player.y,
+          color: hex.player.color
+        };
+      } else {
+        new_hex.player = null;
+      }
       new_hex.wall = hex.wall;
     }, this);
   }, this);
