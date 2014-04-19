@@ -68,7 +68,7 @@ Game.prototype.render = function() {
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {
-    this.stage.update();
+    this.render();
   }.bind(this));
   createjs.Ticker.setInterval(interval);
 };
