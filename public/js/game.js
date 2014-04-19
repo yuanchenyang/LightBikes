@@ -48,8 +48,8 @@ Game.prototype.round = function(callback) {
     this.rounds++;
     if (!this.sim) {
       _.delay(function() {
-        this.next_turn(this.round.bind(this, callback))
-      }.bind(this), 500);
+        this.next_turn(this.round.bind(this, callback));
+      }.bind(this), 2000);
     } else {
       this.next_turn(this.round.bind(this, callback));
     }
@@ -58,7 +58,7 @@ Game.prototype.round = function(callback) {
 
 Game.prototype.render = function() {
   var width_radius = (this.stage.canvas.width - 4) / (1.5 * this.board.width);
-  var height_radius = (this.stage.canvas.height - 4) / ((this.board.height + .5) * Math.sqrt(3));
+  var height_radius = (this.stage.canvas.height - 4) / ((this.board.height + 0.5) * Math.sqrt(3));
   var radius = Math.min(width_radius, height_radius);
 
   _.each(this.board.hexes, function(row) {
@@ -67,7 +67,7 @@ Game.prototype.render = function() {
     }, this);
   }, this);
   this.stage.update();
-}
+};
 
 Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.addEventListener('tick', function() {
@@ -95,7 +95,7 @@ Game.prototype.placePlayers = function(player_list) {
  */
 Game.prototype.move_player = function(player, direction) {
   if (!player.alive) {
-    console.log("Player " + player.name + " is dead");
+    console.log("Player " + player.id + " is dead");
     return false;
   }
 
@@ -168,7 +168,6 @@ Game.prototype.next_turn = function(done) {
   _.each(this.players, function(p, i) {
     p.get_next_move(this.board.get_copy(), this.player_states[i], _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
-        console.log("Invalid move for player: " + p.name);
         next = p.last_move;
       }
       move = Math.floor(move);
@@ -178,6 +177,6 @@ Game.prototype.next_turn = function(done) {
 
     // The simulation handles it's own logic for killing
     if (!this.sim)
-      _.delay(d, 1000, p.name);
+      _.delay(d, 1000, p.id);
   }, this);
 };
