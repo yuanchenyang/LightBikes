@@ -122,7 +122,8 @@ $(document).ready(function() {
     function run() {
       botNames = [a, b];
       var game = new Game(botNames, false);
-      game.run(function(result) {
+      game.run(function(result, moves) {
+        console.log(moves);
         _.delay(function() {
           if (result[0] == 0.5) {
             alert("Tie");

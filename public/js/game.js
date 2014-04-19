@@ -15,6 +15,7 @@ window.Game = function(player_names, simulation) {
   }, this);
 
   if (!this.sim) {
+    this.board.add_click_handlers();
     this.stage = new createjs.Stage("main_canvas");
     this.setAnimationInterval(100);
   }
@@ -41,7 +42,7 @@ Game.prototype.winner = function() {
 Game.prototype.round = function(callback) {
   var wp = this.winner();
   if (wp) {
-    callback(wp);
+    callback(wp, _.map(this.players, function(p) { return p.moves; }));
   } else {
     this.rounds++;
     if (!this.sim) {
@@ -110,6 +111,7 @@ Game.prototype.move_player = function(player, dir) {
   player.x = coord.x;
   player.y = coord.y;
   player.last_move = dir;
+  player.moves.push(dir);
   player.has_moved = true;
   return true;
 };

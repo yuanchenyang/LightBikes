@@ -61,7 +61,9 @@ say = (category, message) ->
   console.log("*** #{m} ***: #{message}")
 
 get_cmd = (p, game_state, player_state) ->
-  "coffee botResponder.coffee --bot '#{p.file}'"
+  f = p.file.replace(/"/g, "\\\"")
+  n = p.name.replace(/"/g, "\\\"")
+  "coffee botResponder.coffee --bot \"#{f}\" --name \"#{n}\""
 
 run_match = (p1, p2, callback) ->
   p1.state = {}
@@ -75,11 +77,11 @@ run_match = (p1, p2, callback) ->
     p2.score += result[1]
 
     if (result[0] == 0.5)
-      say("results", "Tie!")
+      say("results", "#{p1.name} tied with #{p2.name}")
     else if (result[0] == 1)
       say("results", "#{p1.name} vanquished #{p2.name}")
     else if (result[1] == 1)
-      say("results", "#{p2.name} vanquished #{p1.name}")
+      say("results", "#{p1.name} was vanquished by #{p2.name}")
     else
       say("results", "nobody wins!")
     callback()
@@ -88,10 +90,11 @@ run_match = (p1, p2, callback) ->
 Models.Team.findAll()
 .then((teams) ->
   Q.all(_.map(teams, (team) ->
-    say('init', "#{team.name} -> #{team.repo}")
+    say('init', "#{team.name} -> #{team.gh_uname}/#{team.gh_repo}")
     PARTICIPANTS[team.id] =
       name: team.name
       repo: team.gh_uname + "/" + team.gh_repo
+      url: "https://github.com/#{team.gh_uname}/#{team.gh_repo}"
 
     def = Q.defer()
 
@@ -139,6 +142,7 @@ Models.Team.findAll()
     p.score = 0
 
     cmd = get_cmd(p)
+    console.log("Starting: #{cmd}")
     p.proc = exec(cmd + " 2>&1", {async: true})
 
     Bot.register(p.name, (game_state, player_state, move) ->
@@ -147,7 +151,8 @@ Models.Team.findAll()
 
         timeout = null
 
-        c = net.createConnection("/tmp/LightBikeBot-#{p.name}")
+        soc = "/tmp/LightBikeBot-#{p.name}"
+        c = net.createConnection(soc)
 
         c.on('connect', () ->
           c.write(JSON.stringify(game_state) + "\n")
@@ -165,8 +170,10 @@ Models.Team.findAll()
           clearTimeout(timeout)
         )
 
-        c.on('error', (e) ->
+        c.on('error', ->
+          console.log("Socket error connecting to #{p.name}")
           clearTimeout(timeout)
+          p.strikes += 1
           move()
         )
 
@@ -219,14 +226,14 @@ Models.Team.findAll()
   winners = _.chain(PARTICIPANTS)
              .each((p) -> p.proc.kill('SIGKILL') )
              .sortBy((p) -> -p.score)
-             .map((p) -> [p.name, p.score])
+             .map((p) -> [p.name, p.score, p.url || p.file])
              .value()
   console.log()
   console.log()
 
   console.log("Results:")
   _.each(winners, (w) ->
-    console.log("#{w[0]} won #{w[1]} matches")
+    console.log("#{w[0]} won #{w[1]} matches (#{w[2]})")
   )
 
   process.exit(0)

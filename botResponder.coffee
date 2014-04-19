@@ -7,12 +7,14 @@ program = require("commander")
 
 require('./public/js/board')
 require('./public/js/player')
+require('./public/js/hex')
 
 json = (val) ->
   JSON.parse(val)
 
 program
   .option('-b, --bot [filename]', "The bot's filename", false)
+  .option('-n, --name [name]', "The bot's name", false)
   .parse(process.argv)
 
 
@@ -24,6 +26,10 @@ sandbox =
     register: (_name, _fun) ->
       name = _name
       fun = _fun
+    getBot: (_name) ->
+      ->
+    getAllBots: () ->
+      []
   mathjs: require('mathjs')
   _: require('lodash-node')
   $: require('jquery')
@@ -34,6 +40,8 @@ sandbox =
 
 vm = require('vm')
 fs = require('fs')
+
+console.log(program.bot)
 
 vm.runInNewContext(fs.readFileSync(program.bot).toString(), sandbox)
 
@@ -68,8 +76,9 @@ s = net.createServer((conn) ->
   )
 )
 
-bname = "/tmp/LightBikeBot-#{name}"
+bname = "/tmp/LightBikeBot-#{program.name}"
 
-exec("rm -rf #{bname}", () ->
+exec("rm -rf \"#{bname.replace(/"/g, "\\\"")}\"", () ->
+  console.log("Listening to: #{bname}")
   s.listen(bname)
 )
