@@ -39,13 +39,17 @@ $(document).ready(function() {
     var el = $(win1.getWrapperElement());
     var category = event.target.value;
     el.toggle(category === 'custom');
-    store.set('d1', category);
+    if (!_.isEmpty(category)) {
+      store.set('d1', category);
+    }
   });
   b2s.change(function(event) {
     var el = $(win2.getWrapperElement());
     var category = event.target.value;
     el.toggle(category === 'custom');
-    store.set('d2', category);
+    if (!_.isEmpty(category)) {
+      store.set('d2', category);
+    }
   });
   var option;
   _.each(['custom'].concat(Bot.getAllBots()), function(bot) {
