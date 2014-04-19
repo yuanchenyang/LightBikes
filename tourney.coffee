@@ -3,6 +3,7 @@ require('shelljs/global')
 global.window = global
 global._ = require('underscore')
 
+require('./public/js/hex')
 require('./public/js/player')
 require('./public/js/bot')
 require('./public/js/board')
