@@ -3,6 +3,7 @@ require('shelljs/global')
 global.window = global
 global._ = require('underscore')
 
+require('./public/js/hex')
 require('./public/js/player')
 require('./public/js/bot')
 require('./public/js/board')
@@ -46,7 +47,7 @@ say = (category, message) ->
 get_cmd = (p, game_state, player_state) ->
   "coffee botResponder.coffee --bot '#{p.file}'"
 
-run_match = (p1, p2) ->
+run_match = (p1, p2, callback) ->
   p1.state = {}
   p2.state = {}
 
@@ -54,7 +55,18 @@ run_match = (p1, p2) ->
 
   g = new Game([p1.name, p2.name], true)
   g.run((result) ->
-    say('match complete', JSON.stringify(result))
+    p1.score += result[0]
+    p2.score += result[1]
+
+    if (result[0] == 0.5)
+      say("results", "Tie!")
+    else if (result[0] == 1)
+      say("results", "#{p1.name} vanquished #{p2.name}")
+    else if (result[1] == 1)
+      say("results", "#{p2.name} vanquished #{p1.name}")
+    else
+      say("results", "nobody wins!")
+    callback()
   )
 
 Models.Team.findAll()
@@ -106,9 +118,10 @@ Models.Team.findAll()
 
   _.each(PARTICIPANTS, (p) ->
     p.strikes = 0
+    p.score = 0
 
     cmd = get_cmd(p)
-    proc = exec(cmd, {silent: true, async: true})
+    p.proc = exec(cmd, {silent: true, async: true})
 
     Bot.register(p.name, (game_state, player_state, move) ->
       if (p.strikes < 3)
@@ -155,13 +168,36 @@ Models.Team.findAll()
 
   say('play', "Waiting for processes to settle")
 
+  def = Q.defer()
+
+  d = _.after(MATCHES.length, () ->
+    def.resolve()
+  )
+
   setTimeout(() ->
     say('play', "Starting all matches")
     _.each(MATCHES, (match) ->
       p1 = PARTICIPANTS[match[0]]
       p2 = PARTICIPANTS[match[1]]
 
-      run_match(p1, p2)
+      run_match(p1, p2, d)
     )
   , 1000)
+
+  def.promise
+).then(() ->
+  winners = _.chain(PARTICIPANTS)
+             .each((p) -> p.proc.kill('SIGKILL') )
+             .sortBy((p) -> -p.score)
+             .map((p) -> [p.name, p.score])
+             .value()
+  console.log()
+  console.log()
+
+  console.log("Results:")
+  _.each(winners, (w) ->
+    console.log("#{w[0]} won #{w[1]} matches")
+  )
+
+  process.exit(0)
 )

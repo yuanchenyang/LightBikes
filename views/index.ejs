@@ -1,16 +1,33 @@
 <% layout('layout') %>
+<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/codemirror/4.0.3/codemirror.min.js'></script>
+<script type="text/javascript" src='http://cdnjs.cloudflare.com/ajax/libs/codemirror/4.0.3/mode/javascript/javascript.min.js'></script>
+<link rel="stylesheet" href='http://cdnjs.cloudflare.com/ajax/libs/codemirror/4.0.3/codemirror.min.css'></link>
 <% script('/vendor/js/easeljs.min.js') %>
+
 <% script('/js/main.js') %>
 <% script('/js/game.js') %>
 <% script('/js/board.js') %>
 <% script('/js/hex.js') %>
 <% script('/js/player.js') %>
 <% script('/js/bot.js') %>
+<% script('/js/submit.js') %>
 <% script('/bots/dumb-bot.js') %>
 <% script('/bots/circle-bot.js') %>
 
 <h1><%= title %></h1>
 
-<canvas id="main_canvas" width=900 height=500>
-  Your browser must support Canvas!
-</canvas>
+<div class="canvas_container">
+  <canvas id="main_canvas" width=900 height=500>
+    Your browser must support Canvas!
+  </canvas>
+</div>
+
+<section id="bot1_area">
+  <select id="bot1_select" />
+  <textarea id="bot1_code"></textarea>
+</section>
+<section id="bot2_area">
+  <select id="bot2_select" />
+  <textarea id="bot2_code"></textarea>
+</section>
+<button id="start_game_btn">Start the game!</button>
