@@ -13,6 +13,7 @@ window.Player = function(id, name) {
     this.walls = [];
     this.wall_color = wall_colors[id];
     this.last_move = initial_directions[id];
+    this.moves = [];
     this.get_next_move = Bot.getBot(name);
     this.id = _.uniqueId(name);
 
