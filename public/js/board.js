@@ -93,3 +93,15 @@ Board.prototype.safe_directions = function(c) {
     return (_.isNull(hex) || !_.isNull(hex.player));
   }, this);
 };
+
+Board.prototype.transform_coord = function(coord) {
+  var new_y = coord.y + Math.floor(coord.x / 2);
+  var calc_z = -(coord.x + new_y);
+  return {x: coord.x, y: new_y, z: calc_z};
+};
+
+Board.prototype.get_dist = function(c1, c2) {
+  var t_c1 = this.transform_coord(c1);
+  var t_c2 = this.transform_coord(c2);
+  return Math.max(t_c2.x - t_c1.x, t_c2.y - t_c1.y, t_c2.z - t_c1.z);
+};
