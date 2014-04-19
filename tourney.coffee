@@ -61,7 +61,9 @@ say = (category, message) ->
   console.log("*** #{m} ***: #{message}")
 
 get_cmd = (p, game_state, player_state) ->
-  "coffee botResponder.coffee --bot '#{p.file}'"
+  f = p.file.replace(/"/g, "\\\"")
+  n = p.name.replace(/"/g, "\\\"")
+  "coffee botResponder.coffee --bot \"#{f}\" --name \"#{n}\""
 
 run_match = (p1, p2, callback) ->
   p1.state = {}
@@ -140,6 +142,7 @@ Models.Team.findAll()
     p.score = 0
 
     cmd = get_cmd(p)
+    console.log("Starting: #{cmd}")
     p.proc = exec(cmd + " 2>&1", {async: true})
 
     Bot.register(p.name, (game_state, player_state, move) ->
@@ -148,7 +151,8 @@ Models.Team.findAll()
 
         timeout = null
 
-        c = net.createConnection("/tmp/LightBikeBot-#{p.name}")
+        soc = "/tmp/LightBikeBot-#{p.name}"
+        c = net.createConnection(soc)
 
         c.on('connect', () ->
           c.write(JSON.stringify(game_state) + "\n")
@@ -166,8 +170,10 @@ Models.Team.findAll()
           clearTimeout(timeout)
         )
 
-        c.on('error', (e) ->
+        c.on('error', ->
+          console.log("Socket error connecting to #{p.name}")
           clearTimeout(timeout)
+          p.strikes += 1
           move()
         )
 
