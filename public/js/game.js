@@ -74,15 +74,6 @@ Game.prototype.setAnimationInterval = function(interval) {
   createjs.Ticker.setInterval(interval);
 };
 
-Game.prototype.placePlayers = function(player_list) {
-  for (var i = 0; i < player_list.length; i++) {
-    var p = player_list[i];
-    this.players.push(new Player(p.id, p.name, p.moveFunction));
-    this.players[i].renderOnGrid();
-  }
-  stage.update();
-};
-
 /* direction is an integer from 0 to 5 where 0 is moving to the hex in an
  * upper-right direction, 1 is moving to the hex above the current one, and so
  * on
@@ -102,8 +93,11 @@ Game.prototype.move_player = function(player, dir) {
   var hex = this.board.get_hex_at(coord);
   if (_.isNull(hex) || !_.isNull(hex.player)) {
     player.kill();
-    if (hex && !hex.wall) {
-      hex.player.kill();
+    if (hex) {
+      if (!hex.wall) {
+        hex.player.kill();
+      }
+      hex.crash_site = true;
     }
   } else {
     hex.player = player;
