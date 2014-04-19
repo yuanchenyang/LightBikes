@@ -94,7 +94,7 @@ Game.prototype.move_player = function(player, dir) {
   if (_.isNull(hex) || !_.isNull(hex.player)) {
     player.kill();
     if (hex) {
-      if (!hex.wall) {
+      if (!hex.wall && hex.player.has_moved) {
         hex.player.kill();
       }
       hex.crash_site = true;
@@ -107,11 +107,13 @@ Game.prototype.move_player = function(player, dir) {
   player.x = coord.x;
   player.y = coord.y;
   player.last_move = dir;
+  player.has_moved = true;
   return true;
 };
 
 Game.prototype.next_turn = function(done) {
   var needed_players = _.map(this.players, function(p) { return p.id; });
+  _.each(needed_players, function(p) { p.has_moved = false; });
 
   var d = function(id) {
     needed_players = _.without(needed_players, id);
