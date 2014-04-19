@@ -10,8 +10,8 @@ window.Game = function(player_names, simulation) {
     return player;
   }, this);
   this.player_states = {};
-  _.each(this.players, function(p) {
-    this.player_states[p.name] = {};
+  _.each(this.players, function(p, i) {
+    this.player_states[i] = {};
   }, this);
 
   if (!this.sim) {
@@ -163,8 +163,8 @@ Game.prototype.next_turn = function(done) {
     }
   };
 
-  _.each(this.players, function(p) {
-    p.get_next_move(this.board.get_copy(), this.player_states[p.name], _.once(function(move) {
+  _.each(this.players, function(p, i) {
+    p.get_next_move(this.board.get_copy(), this.player_states[i], _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
         move = p.last_move;
       }
