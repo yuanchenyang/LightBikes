@@ -31,7 +31,7 @@ PARTICIPANTS =
 
 MATCHES = []
 
-max_execs = 30
+max_execs = 100
 running_execs = 0
 waiting_execs = []
 
@@ -52,7 +52,7 @@ run_next = (command, props, callback) ->
   timeout = setTimeout(() ->
     say('bot', "Killing slow exec #{command}")
     proc.kill('SIGKILL')
-  , 1000)
+  , 10000)
 
 enqueue_exec = (command, props, callback) ->
   if (running_execs < max_execs)

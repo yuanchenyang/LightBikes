@@ -8,8 +8,8 @@ exports.index = function(req, res){
   });
 };
 
-exports.submit = function(req, res) {
+exports.register = function(req, res) {
   res.render('register', {
-    title: 'Submit Entry'
+    title: 'Register Group'
   });
 };

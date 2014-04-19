@@ -16,6 +16,7 @@ Game.prototype.run = function(callback) {
   _.each(this.players, function(p) {
     this.player_states[p.name] = {};
   }, this);
+  this.rounds = 0;
   this.round(callback);
 };
 
@@ -23,6 +24,8 @@ Game.prototype.winner = function() {
   living_players = _.reject(this.players, function(p) { return !p.alive; });
   if (living_players.length == 1) {
     return living_players[0];
+  } else if (living_players <= 0) {
+    return true;
   } else {
     return false;
   }
@@ -32,8 +35,13 @@ Game.prototype.round = function(callback) {
   var wp = this.winner();
   if (wp) {
     callback(wp);
+  } else if (this.rounds > 1000) {
+    callback({
+      error: "TOO MANY ROUNDS"
+    });
   } else {
-    this.next_turn(this.round.bind(this));
+    this.rounds++;
+    this.next_turn(this.round.bind(this, callback));
   }
 };
 
