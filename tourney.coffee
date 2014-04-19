@@ -166,7 +166,6 @@ Models.Team.findAll()
         )
 
         c.on('error', (e) ->
-          console.log(error)
           clearTimeout(timeout)
           move()
         )

@@ -1,7 +1,7 @@
 window.Player = function(id, name) {
     var player_colors = ["darkred", "blue"];
     var wall_colors = ["red", "lightblue"];
-    var start_positions = [{x:10,y:8}, {x:20,y:8}];
+    var start_positions = [{x:10,y:7}, {x:19,y:7}];
     var initial_directions = [0, 3];
 
     this.x = start_positions[id].x;
