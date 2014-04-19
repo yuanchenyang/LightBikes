@@ -47,7 +47,7 @@ Game.prototype.round = function(callback) {
     if (!this.sim) {
       _.delay(function() {
         this.next_turn(this.round.bind(this, callback));
-      }.bind(this), 500);
+      }.bind(this), 100);
     } else {
       this.next_turn(this.round.bind(this, callback));
     }
@@ -155,27 +155,28 @@ Game.prototype.move_player = function(player, direction) {
 
 Game.prototype.next_turn = function(done) {
   var needed_players = _.map(this.players, function(p) { return p.id; });
-  var odone = _.once(done);
 
   var d = function(id) {
     needed_players = _.without(needed_players, id);
     if (needed_players.length === 0) {
-      odone();
+      done();
     }
   };
 
   _.each(this.players, function(p, i) {
-    p.get_next_move(this.board.get_copy(), this.player_states[i], _.once(function(move) {
+    var moveFn = _.once(function(move) {
       if (typeof move === 'undefined' || move < 0 || move > 5 || move == (p.last_move + 3) % 6) {
-        next = p.last_move;
+        move = p.last_move;
       }
       move = Math.floor(move);
       this.move_player(p, move);
       d(p.id);
-    }.bind(this)));
+    }.bind(this));
+
+    p.get_next_move(this.board.get_copy(), this.player_states[i], moveFn);
 
     // The simulation handles it's own logic for killing
     if (!this.sim)
-      _.delay(d, 1000, p.id);
+      _.delay(moveFn, 500);
   }, this);
 };

@@ -45,7 +45,6 @@ $(document).ready(function() {
     wait = 0;
     var a,b;
     if (b1s.val() === 'custom') {
-      wait += 1;
       injectJS(win1.getValue(), function(v) {
         a = v;
         tryRun();
@@ -54,7 +53,6 @@ $(document).ready(function() {
       a = b1s.val();
     }
     if (b2s.val() === 'custom') {
-      wait += 1;
       injectJS(win2.getValue(), function(v) {
         b = v;
         tryRun();
@@ -83,7 +81,7 @@ $(document).ready(function() {
       }
     }
 
-    if (wait === 0) run();
+    tryRun();
 
     function tryRun() {
       if (a && b) {
